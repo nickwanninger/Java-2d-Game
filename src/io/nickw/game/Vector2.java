@@ -1,0 +1,13 @@
+package io.nickw.game;
+
+public class Vector2 {
+	public float x, y;
+	public Vector2 (float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public String toString() {
+		return "(" + this.x + ", " + this.y + ")";
+	}
+}

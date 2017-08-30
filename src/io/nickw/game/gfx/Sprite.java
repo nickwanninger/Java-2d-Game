@@ -34,13 +34,17 @@ public class Sprite {
 		for (int i = 0; i < pixels.length; i++) {
             int in = pixels[i];
             int col = in;
-            if (in == 0xffe476ff || in == 0xff8e49a2) col = -1;
             pixels[i] = col;
          }
 		
 	}
 	
 	public int GetPixel(int x, int y) {
-		return pixels[y * width + x];
+		if (x >= 0 && x < width && y >= 0 && y < height) {
+			return pixels[y * width + x];
+		} else {
+			return -1;
+		}
+		
 	}
 }

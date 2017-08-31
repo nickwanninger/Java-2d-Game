@@ -33,7 +33,7 @@ public class Game extends Canvas implements Runnable {
 	private Screen screen;
 	public InputHandler input;
 
-	Level level = new Level(16 * 16, 16 * 16);
+	Level level = new Level(16 * 12, 16 * 8);
 
 	public static int fps = 0;
 	public static int tps = 0;

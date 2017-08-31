@@ -4,8 +4,7 @@ import java.awt.event.KeyListener;
 
 public class InputHandler implements KeyListener {
 	public class Key {
-		public boolean down, clicked;
-
+		public boolean down;
 		public void toggle(boolean pressed) {
 			if (pressed != down) {
 				down = pressed;
@@ -46,5 +45,10 @@ public class InputHandler implements KeyListener {
 	}
 
 	public void keyTyped(KeyEvent ke) {
+		
+	}
+	
+	public void left(boolean t) {
+		
 	}
 }

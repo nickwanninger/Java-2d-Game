@@ -17,9 +17,9 @@ import io.nickw.game.gfx.Sprite;
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	public static final int WIDTH = 300;
-	public static final int HEIGHT = WIDTH * 9 / 12;
-	public static final int WINDOWSIZE = 800;
+	public static final int WIDTH = 64;
+	public static final int HEIGHT = 64;
+	public static final int WINDOWSIZE = 300;
 	public static final String NAME = "Java Game";
 	private JFrame frame;
 	public boolean running = false;
@@ -48,7 +48,7 @@ public class Game extends Canvas implements Runnable {
 	public Game() {
 		level.addObject(player);
 		int windowWidth = WINDOWSIZE;
-		int windowHeight = WINDOWSIZE * 9 / 12;
+		int windowHeight = WINDOWSIZE;
 		setMinimumSize(new Dimension(windowWidth, windowHeight));
 		setMaximumSize(new Dimension(windowWidth, windowHeight));
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
@@ -94,7 +94,7 @@ public class Game extends Canvas implements Runnable {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = false;
+			boolean shouldRender = true;
 
 			while (delta >= 1) {
 				ticks++;
@@ -104,7 +104,7 @@ public class Game extends Canvas implements Runnable {
 			}
 
 			try {
-				Thread.sleep(0);
+				Thread.sleep(2);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -149,7 +149,7 @@ public class Game extends Canvas implements Runnable {
 		int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
 		int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
 		int wW = WINDOWSIZE;
-		int wH = WINDOWSIZE * 9 / 12;
+		int wH = WINDOWSIZE;
 		Game.mouseX = (int) (rawMouseX / (float) wW * WIDTH);
 		Game.mouseY = (int) (rawMouseY / (float) wH * HEIGHT);
 
@@ -161,7 +161,7 @@ public class Game extends Canvas implements Runnable {
 				Level.height - screen.offset.y, 0xffffffff);
 
 		level.render(screen);
-		Font.drawWithFrame(screen, Game.fps + "fps", 3, 3);
+		Font.drawWithFrame(screen, Game.fps + "fps", 0, 0);
 		drawFocusText();
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);

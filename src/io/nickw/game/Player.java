@@ -11,7 +11,7 @@ public class Player extends GameObject {
 	public Player(int x, int y, Level level) {
 		super(x,y, level);
 		order = 2;
-		this.spritePosition = new Coordinate(1,0);
+		this.spritePosition = new Coordinate(0,0);
 	}
 	
 	public void tick() {

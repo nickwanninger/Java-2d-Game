@@ -24,7 +24,7 @@ public class Sprite {
 		if (image == null) {
 			return;
 		}
-		
+
 		this.path = path;
 		this.width = image.getWidth();
 		this.height = image.getHeight();

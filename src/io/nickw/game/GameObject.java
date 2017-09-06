@@ -29,8 +29,8 @@ public class GameObject {
 	public void render(Screen screen) {
 		if (deleted) return;
 		// render coordinates
-		int rx = (int)this.position.x;
-		int ry = (int)this.position.y;
+		int rx = this.position.x;
+		int ry = this.position.y;
 		screen.drawSprite(sprite, rx, ry);
 	}
 	

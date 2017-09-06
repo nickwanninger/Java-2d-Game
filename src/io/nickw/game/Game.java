@@ -9,8 +9,9 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
+import io.nickw.game.entity.Player;
 import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.gfx.Screen;
@@ -21,12 +22,10 @@ import io.nickw.game.level.Level;
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 64;
-	private static final int HEIGHT = 64;
+	private static final int WIDTH = 96;
+	private static final int HEIGHT = 96;
 	private static final int windowWidth = 600;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
-
-	private static double TICKRATE = 60.0;
 
 	private static final String NAME = "Java Game";
 	private JFrame frame;
@@ -58,7 +57,7 @@ public class Game extends Canvas implements Runnable {
 		setMaximumSize(new Dimension(windowWidth, windowHeight));
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		frame = new JFrame(Game.NAME);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
@@ -87,6 +86,7 @@ public class Game extends Canvas implements Runnable {
 
 	public void run() {
 		long lastTime = System.nanoTime();
+		double TICKRATE = 60.0;
 		double nsPerTick = 1000000000D / TICKRATE;
 
 		int frames = 0;
@@ -137,7 +137,7 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void render() {
-		
+
 
 		int xo = player.position.x - (WIDTH - 8) / 2;
 		int yo = player.position.y - ((HEIGHT - 8) / 2) + 6;
@@ -157,25 +157,25 @@ public class Game extends Canvas implements Runnable {
 		Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
 
 		screen.clear(0xff5fcde4);
-		
+
 		level.render(screen);
-//		screen.postProcess();		
+//		screen.postProcess();
 		drawGUI(screen);
-		
-		
-		
+
+
+
 //		drawFocusText();
-		
+
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
 		bs.show();
 	}
-	
+
 	public void drawGUI(Screen screen) {
 		int yo = HEIGHT - 16;
 		screen.drawSquare(0, yo - 1, WIDTH, yo, 0x000);
-		
+
 		for (int x = 0; x < WIDTH; x ++) {
 			for (int y = 0; y < 16; y ++) {
 				int dy = y + yo;
@@ -185,13 +185,13 @@ public class Game extends Canvas implements Runnable {
 		}
 
 		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
-		
-		
+
+
 		SpriteReference fullHeart = new SpriteReference(new Coordinate(0, 8 * 6), 4, 4);
 		SpriteReference emptyHeart = new SpriteReference(new Coordinate(4, 8 * 6), 4, 4);
 		// draw the player's health to the GUI Bar
 		for (int i = 0; i < player.maxHealth; i++) {
-			
+
 			int x = 3 + i * 4 + screen.offset.x;
 			int y = yo + 9 + screen.offset.y;
 			if (i >= player.health) {
@@ -199,10 +199,10 @@ public class Game extends Canvas implements Runnable {
 			} else {
 				screen.drawSprite(fullHeart, x, y);
 			}
-			
+
 		}
-		
-		
+
+
 	}
 
 	public void drawFocusText() {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.tile.Brick;
@@ -49,10 +50,10 @@ public class Level {
 	
 	public void render(Screen screen) {
 		
-		int xo = screen.offset.x / 8;
-		int yo = screen.offset.y / 8;
-		int w = (screen.width + 8) / 8;
-		int h = (screen.height + 8) / 8;
+		int xo = screen.offset.x / 8 - 1;
+		int yo = screen.offset.y / 8 - 1;
+		int w = (screen.width) / 8 + 2;
+		int h = (screen.height) / 8 + 2;
 		for (int x = xo; x < w + xo; x++ ) {
 			for (int y = yo; y < h + yo; y++ ) {
 				Tile tile = getTile(x,y);
@@ -75,6 +76,10 @@ public class Level {
 	public Tile getTile(int x, int y) {
 		if (x < 0 || y < 0 || x >= width || y >= height) return new Tile(x * 8,y * 8,this);;
 		return tiles[x + y * height];
+	}
+
+	public Tile getTile(Coordinate t) {
+		return getTile(t.x, t.y);
 	}
 	
 	

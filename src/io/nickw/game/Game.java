@@ -8,32 +8,40 @@ import java.awt.MouseInfo;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+
 import javax.swing.JFrame;
+
 import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.gfx.Sprite;
+import io.nickw.game.gfx.SpriteReference;
+import io.nickw.game.level.Level;
 
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	public static final int WIDTH = 64;
-	public static final int HEIGHT = 64;
-	public static final int WINDOWSIZE = 300;
-	public static final String NAME = "Java Game";
+	private static final int WIDTH = 64;
+	private static final int HEIGHT = 64;
+	private static final int windowWidth = 600;
+	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
+
+	private static double TICKRATE = 60.0;
+
+	private static final String NAME = "Java Game";
 	private JFrame frame;
-	public boolean running = false;
-	public int tickCount = 0;
+	private boolean running = false;
+	private int tickCount = 0;
 
 	public static float gravity = 0.1f;
 
-	public static int mouseX = 0;
-	public static int mouseY = 0;
+	private static int mouseX = 0;
+	private static int mouseY = 0;
 
 	private Screen screen;
-	public InputHandler input;
+	private InputHandler input;
 
-	Level level = new Level(16 * 12, 16 * 8);
+	Level level = new Level(8, 8);
 
 	public static int fps = 0;
 	public static int tps = 0;
@@ -43,12 +51,9 @@ public class Game extends Canvas implements Runnable {
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
-	Player player = new Player(Level.width / 2 - 8, Level.height / 2 - 8, level);
+	Player player;
 
 	public Game() {
-		level.addObject(player);
-		int windowWidth = WINDOWSIZE;
-		int windowHeight = WINDOWSIZE;
 		setMinimumSize(new Dimension(windowWidth, windowHeight));
 		setMaximumSize(new Dimension(windowWidth, windowHeight));
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
@@ -66,6 +71,8 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
 		screen.pixels = pixels;
 		input = new InputHandler(this);
+		player = new Player(level.width * 8 / 2 - 4, level.height * 8 / 2 - 4, level, input);
+		level.addObject(player);
 	}
 
 	public void start() {
@@ -80,7 +87,7 @@ public class Game extends Canvas implements Runnable {
 
 	public void run() {
 		long lastTime = System.nanoTime();
-		double nsPerTick = 1000000000D / 60D;
+		double nsPerTick = 1000000000D / TICKRATE;
 
 		int frames = 0;
 		int ticks = 0;
@@ -94,19 +101,13 @@ public class Game extends Canvas implements Runnable {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = true;
+			boolean shouldRender = false;
 
 			while (delta >= 1) {
 				ticks++;
 				tick();
 				delta -= 1;
 				shouldRender = true;
-			}
-
-			try {
-				Thread.sleep(2);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 			if (shouldRender) {
 				frames++;
@@ -125,9 +126,10 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void tick() {
-
+		input.tick();
 		tickCount++;
 		if (!hasFocus()) {
+			input.releaseAll();
 		} else {
 			level.tick();
 		}
@@ -135,8 +137,11 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void render() {
+		
 
-		screen.setOffset(player.position.x - (WIDTH - 16) / 2, player.position.y - ((HEIGHT - 16) / 2));
+		int xo = player.position.x - (WIDTH - 8) / 2;
+		int yo = player.position.y - ((HEIGHT - 8) / 2) + 6;
+		screen.setOffset(xo, yo);
 
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null) {
@@ -148,37 +153,74 @@ public class Game extends Canvas implements Runnable {
 		// update the mouse location every frame:
 		int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
 		int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
-		int wW = WINDOWSIZE;
-		int wH = WINDOWSIZE;
-		Game.mouseX = (int) (rawMouseX / (float) wW * WIDTH);
-		Game.mouseY = (int) (rawMouseY / (float) wH * HEIGHT);
+		Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
+		Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
 
-		screen.clear(0xffffffff);
-
-		screen.drawSquare(0 - screen.offset.x - 1, 0 - screen.offset.y - 1, Level.width - screen.offset.x + 1,
-				Level.height - screen.offset.y + 1, 0xffaaaaaa);
-		screen.drawSquare(0 - screen.offset.x, 0 - screen.offset.y, Level.width - screen.offset.x,
-				Level.height - screen.offset.y, 0xffffffff);
-
+		screen.clear(0xff5fcde4);
+		
 		level.render(screen);
-		Font.drawWithFrame(screen, Game.fps + "fps", 0, 0);
-		drawFocusText();
+//		screen.postProcess();		
+		drawGUI(screen);
+		
+		
+		
+//		drawFocusText();
+		
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
 		bs.show();
 	}
+	
+	public void drawGUI(Screen screen) {
+		int yo = HEIGHT - 16;
+		screen.drawSquare(0, yo - 1, WIDTH, yo, 0x000);
+		
+		for (int x = 0; x < WIDTH; x ++) {
+			for (int y = 0; y < 16; y ++) {
+				int dy = y + yo;
+				int col = Color.Adjust(screen.getPixel(x, y + yo), 0.08f);
+				screen.setPixel(x, dy, col);
+			}
+		}
+
+		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
+		
+		
+		SpriteReference fullHeart = new SpriteReference(new Coordinate(0, 8 * 6), 4, 4);
+		SpriteReference emptyHeart = new SpriteReference(new Coordinate(4, 8 * 6), 4, 4);
+		// draw the player's health to the GUI Bar
+		for (int i = 0; i < player.maxHealth; i++) {
+			
+			int x = 3 + i * 4 + screen.offset.x;
+			int y = yo + 9 + screen.offset.y;
+			if (i >= player.health) {
+				screen.drawSprite(emptyHeart, x, y);
+			} else {
+				screen.drawSprite(fullHeart, x, y);
+			}
+			
+		}
+		
+		
+	}
 
 	public void drawFocusText() {
 		if (!hasFocus()) {
 			for (int i = 0; i < WIDTH * HEIGHT; i++) {
-				screen.pixels[i] = Color.Adjust(screen.pixels[i], 0.1f);
+				screen.pixels[i] = Color.Adjust(screen.pixels[i], 0.3f);
 			}
 			String s1 = "Paused";
-			String s2 = "Click to Unpause";
-			Font.drawText(screen, s1, WIDTH / 2 - s1.length() * 8 / 2, 10, 0xaaaaaa);
-			if (Math.sin(tickCount / 5) >= 0) {
-				Font.drawText(screen, s2, WIDTH / 2 - s2.length() * 8 / 2, 28, 0xffffff);
+
+			int sX = WIDTH / 2 - s1.length() * 6 / 2 - 5;
+			int sY = 5;
+			screen.drawSquare(sX, sY, sX + s1.length() * 6 + 9, sY + 42, 0xff000000);
+			Font.drawText(screen, s1, WIDTH / 2 - s1.length() * 6 / 2, 10, 0x008751);
+			if (Math.sin(tickCount / 4) >= 0) {
+				int ctfY = 20;
+				Font.drawText(screen, "CLICK", WIDTH / 2 - 5 * 6 / 2, ctfY, 0xffffff);
+				Font.drawText(screen, "TO", WIDTH / 2 - 2 * 6 / 2, ctfY + 8, 0xffffff);
+				Font.drawText(screen, "FOCUS", WIDTH / 2 - 5 * 6 / 2, ctfY + 16, 0xffffff);
 			}
 		}
 	}
@@ -187,5 +229,4 @@ public class Game extends Canvas implements Runnable {
 		Game game = new Game();
 		game.start();
 	}
-
 }

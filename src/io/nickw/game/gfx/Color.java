@@ -1,6 +1,7 @@
 package io.nickw.game.gfx;
 
 public class Color {
+
 	public static int Adjust(int c, float d) {
 		int r = (c >> 16) & 0xff;
 		int g = (c >> 8) & 0xff;
@@ -22,6 +23,5 @@ public class Color {
 		int b = d % 10;
 		return r * 36 + g * 6 + b;
 	}
-	
-	
+
 }

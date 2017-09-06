@@ -3,12 +3,13 @@ package io.nickw.game;
 import java.util.Random;
 
 import io.nickw.game.gfx.*;
+import io.nickw.game.level.Level;
 
 public class GameObject {
 	
 	public Coordinate position;
 	public long id;
-	public Coordinate spritePosition;
+	public SpriteReference sprite;
 	private boolean deleted = false;
 	public Level level;
 	public int order = -3000;
@@ -17,7 +18,7 @@ public class GameObject {
 		this.level = l;
 		id = new Random().nextLong();
 		this.position = new Coordinate(x,y);
-		this.spritePosition = new Coordinate(0,0);
+		this.sprite = new SpriteReference(new Coordinate(0,0), 8, 8);
 	}
 
 	
@@ -30,7 +31,7 @@ public class GameObject {
 		// render coordinates
 		int rx = (int)this.position.x;
 		int ry = (int)this.position.y;
-		screen.drawSprite(spritePosition, rx, ry);
+		screen.drawSprite(sprite, rx, ry);
 	}
 	
 	public boolean equals(GameObject other) {

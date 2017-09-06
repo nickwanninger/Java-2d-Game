@@ -1,9 +1,10 @@
 package io.nickw.game.gfx;
 
+import io.nickw.game.Coordinate;
 import io.nickw.game.Game;
 import io.nickw.game.GameObject;
-import io.nickw.game.Level;
 import io.nickw.game.Vector2;
+import io.nickw.game.level.Level;
 
 public class Particle extends GameObject {
 	
@@ -11,13 +12,15 @@ public class Particle extends GameObject {
 	long created = 0l;
 	long lifetime = 0l;
 	int color;
+	SpriteReference sprite = new SpriteReference(new Coordinate(0, 8 * 5), 8, 8);
 	
-	public Particle(int x, int y, Level level, Vector2 impulse, int lt) {
+	public Particle(int x, int y, Level level, Vector2 impulse, int lt, int color) {
 		super(x,y,level);
+		this.color = color;
 		velocity = impulse;
 		created = System.currentTimeMillis();
 		this.lifetime = (long)lt;
-		order = 3;
+		order = 4;
 	}
 	
 	public void tick () {
@@ -32,10 +35,9 @@ public class Particle extends GameObject {
 	}
 	
 	public void render (Screen screen) {
-		int col = 0xff0044;
 		if (isDeleted()) return;
-		screen.drawSquare(this.position.x, this.position.y, this.position.x + 2, this.position.y + 2, Color.Adjust(col, 0.9f));
-		screen.setPixel(this.position.x, this.position.y, col);
+//		screen.setPixel(this.position.x, this.position.y, color);
+		screen.drawSprite(sprite, this.position.x, this.position.y);
 		
 	}
 }

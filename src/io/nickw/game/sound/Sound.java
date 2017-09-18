@@ -4,7 +4,9 @@ import java.applet.Applet;
 import java.applet.AudioClip;
 
 public class Sound {
-	public static final Sound hit = new Sound("/sound/hit.wav");
+	public static final Sound hit = new Sound("/sound/Hit.wav");
+	public static final Sound jump = new Sound("/sound/Jump.wav");
+	public static final Sound land = new Sound("/sound/Land.wav");
 	
 	private AudioClip clip;
 
@@ -18,11 +20,9 @@ public class Sound {
 
 	public void play() {
 		try {
-			new Thread() {
-				public void run() {
-					clip.play();
-				}
-			}.start();
+			new Thread(() -> {
+				clip.play();
+			}).start();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

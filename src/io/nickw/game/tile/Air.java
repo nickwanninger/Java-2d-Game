@@ -4,11 +4,12 @@ import io.nickw.game.Coordinate;
 import io.nickw.game.gfx.SpriteReference;
 import io.nickw.game.level.Level;
 
-public class Stone extends Tile {
+public class Air extends Tile {
 
-	public Stone(int id) {
+	public Air(int id) {
 		super(id);
-		sprite = new SpriteReference(new Coordinate(16, 0), 16, 16);
+		passable = true;
+		sprite = new SpriteReference(new Coordinate(0, 0), 8, 8);
 	}
 
 }

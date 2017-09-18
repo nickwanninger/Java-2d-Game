@@ -26,10 +26,11 @@ public class Player extends Entity {
 	private long lastAttacked = System.currentTimeMillis();
 	private SpriteReference idleSprite = new SpriteReference(new Coordinate(0, 56), 8, 8);
 	private Animation walkAnimation = new Animation(4, new Coordinate(8, 56));
-
 	public Player(int x, int y, Level level, InputHandler i) {
+
 		super(x, y, level);
 		this.level = level;
+		this.bounds = new Bounds(2, 1, 4,7);
 		order = 5;
 		input = i;
 		walkAnimation.frameRate = 15;
@@ -39,14 +40,18 @@ public class Player extends Entity {
 		tickCount++;
 		health = (tickCount / 3) % maxHealth + 1;
 
-		int moveSpeed = 1;
+		float moveSpeed = 1f;
+		float jumpForce = 2f;
 		// apply the input to the speed value.
 		if (input.right.down)
 			velocity.x += moveSpeed;
 		if (input.left.down)
 			velocity.x -= moveSpeed;
-		if (input.up.down && velocity.y == 0)
-			velocity.y -= 12;
+		if (input.up.clicked && grounded) {
+			Sound.jump.play();
+			velocity.y = -jumpForce;
+		}
+
 		if (input.attack.down) {
 			long now = System.currentTimeMillis();
 			if (now - attackCooldown >= lastAttacked) {
@@ -54,16 +59,17 @@ public class Player extends Entity {
 				attack();
 			}
 		}
-
-		velocity.y += 0.2;
-
+		velocity.y += Game.gravity;
 		// gets the total unsigned movement
 		int movementMagnitude = (int) Math.abs(Math.sqrt((Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2))));
 		// if the unsigned movement magnitude is greater than 0, we must be moving.
 		moving = movementMagnitude > 0;
 		if (Math.abs(velocity.x) > 0) {
 			walking = true;
-			walkAnimation.tick();
+			if (grounded) {
+				walkAnimation.tick();
+			}
+
 			if (velocity.x < 0) {
 				flipBits = 0x01;
 				direction = 3;
@@ -79,6 +85,12 @@ public class Player extends Entity {
 		velocity.x = 0;
 	}
 
+
+	public void landed() {
+		Sound.land.play();
+	}
+
+
 	public void attack() {
 		Sound.hit.play();
 	}
@@ -90,6 +102,7 @@ public class Player extends Entity {
 			dS = walkAnimation.GetCurrentFrame();
 		}
 		screen.drawSprite(dS, position.x, position.y, flipBits);
+//		bounds.render(screen, position);
 	}
 
 	Coordinate GetAttackSwingPosition() {

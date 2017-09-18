@@ -29,26 +29,10 @@ public class Screen {
 		}
 	}
 	
-	public Coordinate setOffset(int x, int y) {
+	public void setOffset(int x, int y) {
 		offset = new Coordinate(x, y);
-		return offset;
 	}
 	
-	public float gausian(float x) {
-		if (x == 0.5f) return 1;
-		x = x + 0.5f;
-		float n = (float) (Math.sin( 2 * Math.PI *  x) * (1/ (2 * Math.PI)));
-		return n / (x - 1);
-	}
-	
-	public void postProcess() {
-		for (int i = 0; i < pixels.length; i++) {
-			int x = i / width;
-			int y = i % width;
-			float c = ((gausian((float) x / width) + gausian((float) y / width)) / 2);
-			pixels[i] = Color.Adjust(pixels[i], c);
-		}
-	}
 	
 	// quick setting of a certain pixel
 	public void setPixel(int x, int y, int color) {

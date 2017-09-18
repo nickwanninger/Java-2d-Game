@@ -5,35 +5,76 @@ import io.nickw.game.GameObject;
 import io.nickw.game.Vector2;
 import io.nickw.game.level.Level;
 import io.nickw.game.*;
-import io.nickw.game.gfx.SpriteReference;
 import io.nickw.game.tile.Tile;
-import java.util.Random;
 
 public class Entity extends GameObject {
 
 	public Vector2 velocity = new Vector2(0, 0);
 	public Level level;
 	public boolean grounded = false;
-	public BoundingBox bb = new BoundingBox(new Coordinate(0,0),0,0);
+	Bounds bounds = new Bounds(0,0,16,16);
+
+
 
 	// constructor
 	public Entity(int x, int y, Level l) {
-		// construct super class
+		// construct with super class
 		super(x, y, l);
 	}
 
 	public void move() {
-		velocity.y = Math.min(7f, velocity.y);
-		this.position.x += velocity.x;
-		this.position.y += velocity.y;
-		bb = new BoundingBox(new Coordinate(this.position.x + 2, this.position.y + 1), 4, 7);
-		handleCollisions(level);
+		velocity.y = Math.min(Game.terminalVelocity, velocity.y);
+		moveX(level);
+		moveY(level);
 	}
 
-	// will adjust the velocity and positions so that the player can collide with a level.tiles where passable = false.
-	public void handleCollisions(Level level) {
-		Tile[] tiles = bb.getTileIntersections(level);
-		grounded = false; // reset the "grounded" variable to false, basically always assume the player can jump
+	void moveX(Level level) {
+		int tx;
+		if (velocity.x == 0) return;
+		if (velocity.x > 0) { // moving right
+			tx = (int) (position.x + bounds.x + bounds.width - 1 + velocity.x) / Tile.TILE_WIDTH;
+		} else {
+			tx = (int) (position.x + bounds.x + velocity.x) / Tile.TILE_WIDTH;
+		}
+		boolean topPassable = level.getTile(tx, (position.y + bounds.y) / Tile.TILE_WIDTH).passable;
+		boolean bottomPassable = level.getTile(tx, (position.y + bounds.y + bounds.height - 1) / Tile.TILE_WIDTH).passable;
+		if (topPassable && bottomPassable) {
+			this.position.x += velocity.x;
+		} else {
+			velocity.x = 0;
+		}
 	}
 
+	void moveY(Level level) {
+		if (velocity.y == 0) return;
+		int ty;
+		// moving up
+		if (velocity.y < 0) {
+			ty = (int) (position.y + bounds.y + velocity.y) / Tile.TILE_WIDTH;
+		} else {
+			ty = (int) (position.y + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
+		}
+		if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
+			if (velocity.y < 0) {
+				grounded = false;
+			}			this.position.y += velocity.y;
+		} else {
+			if (velocity.y > 0) {
+				if (!grounded) {
+					landed();
+				}
+				this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
+				grounded = true;
+			} else if (velocity.y < 0) {
+				this.position.y = ty * Tile.TILE_WIDTH + bounds.height;
+				grounded = false;
+			}
+			velocity.y = 0;
+		}
+
+	}
+
+	public void landed() {
+		// to be implemented in sub-classes
+	}
 }

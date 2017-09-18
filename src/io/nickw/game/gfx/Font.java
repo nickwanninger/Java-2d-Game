@@ -9,13 +9,14 @@ public class Font {
 	}
 	
 	public static void drawText(Screen screen, String text, int x, int y) {
-		drawText(screen, text, x, y, 0xff000000);
+		drawText(screen, text, x, y, 0x000000);
 	}
 	
 	
 	public static void drawWithFrame(Screen screen, String msg, int x, int y) {
-		drawWithFrame(screen, msg, x, y, 0xffffffff, 0xff000000);
+		drawWithFrame(screen, msg, x, y, 0xffffff, 0xff000000);
 	}
+
 	public static void drawWithFrame(Screen screen, String msg, int x, int y, int col, int bgCol) {
 		screen.drawSquare(x, y, msg.length() * 6 + 1, y + 7, bgCol);
 		drawText(screen, msg, x + 1, y + 1, col);
@@ -30,7 +31,7 @@ public class Font {
 					int sx = offset + (i / 6);
 					int sy = i % 6;
 					int pixel = fontData.GetPixel(sx, sy);
-					if (pixel == 0xffffffff) {
+					if (pixel == 0xffffff) {
 						 screen.setPixel(x + i / 6 + l * 6, y + sy, col);
 					}
 				}

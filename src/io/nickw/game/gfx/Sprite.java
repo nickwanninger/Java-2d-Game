@@ -29,11 +29,11 @@ public class Sprite {
 		this.width = image.getWidth();
 		this.height = image.getHeight();
 		this.image = image;
-		
+		int colorDepth = 4;
 		pixels = image.getRGB(0, 0, width, height, null, 0, width);
 		for (int i = 0; i < pixels.length; i++) {
 			// chop the alpha off of the color's int value
-            pixels[i] = (pixels[i] & 0xffffff);
+            pixels[i] = pixels[i] & 0xffffff;
          }
 		
 	}

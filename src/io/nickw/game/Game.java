@@ -8,9 +8,7 @@ import java.awt.MouseInfo;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-
 import javax.swing.*;
-
 import io.nickw.game.entity.Player;
 import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
@@ -22,9 +20,9 @@ import io.nickw.game.level.Level;
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 96;
+	private static final int WIDTH = 120;
 	private static final int HEIGHT = 96;
-	private static final int windowWidth = 600;
+	private static final int windowWidth = 800;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
 	private static final String NAME = "Java Game";
@@ -33,6 +31,7 @@ public class Game extends Canvas implements Runnable {
 	private int tickCount = 0;
 
 	public static float gravity = 0.1f;
+	public static float terminalVelocity = 3f;
 
 	private static int mouseX = 0;
 	private static int mouseY = 0;
@@ -40,12 +39,11 @@ public class Game extends Canvas implements Runnable {
 	private Screen screen;
 	private InputHandler input;
 
-	Level level = new Level(8, 8);
-
 	public static int fps = 0;
 	public static int tps = 0;
 
 	Font font = new Font();
+	Level level = new Level(10, 10);
 
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
@@ -109,16 +107,19 @@ public class Game extends Canvas implements Runnable {
 				delta -= 1;
 				shouldRender = true;
 			}
+
 			if (shouldRender) {
 				frames++;
 				render();
 			}
 
-			if (System.currentTimeMillis() - lastTimer >= 1000) {
+			double deltaT = System.currentTimeMillis() - lastTimer;
+
+			if (deltaT >= 1000) {
 				lastTimer += 1000;
 				Game.fps = frames;
 				Game.tps = ticks;
-				System.out.println(frames + " FPS, " + ticks + " TPS, " + Level.objects.size() + " objects in scene");
+				System.out.println(frames + " frames " + ticks + " ticks ");
 				frames = 0;
 				ticks = 0;
 			}
@@ -133,12 +134,9 @@ public class Game extends Canvas implements Runnable {
 		} else {
 			level.tick();
 		}
-
 	}
 
 	public void render() {
-
-
 		int xo = player.position.x - (WIDTH - 8) / 2;
 		int yo = player.position.y - ((HEIGHT - 8) / 2) + 6;
 		screen.setOffset(xo, yo);
@@ -149,7 +147,6 @@ public class Game extends Canvas implements Runnable {
 			requestFocus();
 			return;
 		}
-
 		// update the mouse location every frame:
 		int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
 		int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
@@ -159,13 +156,8 @@ public class Game extends Canvas implements Runnable {
 		screen.clear(0xff5fcde4);
 
 		level.render(screen);
-//		screen.postProcess();
 		drawGUI(screen);
-
-
-
 //		drawFocusText();
-
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
@@ -185,13 +177,10 @@ public class Game extends Canvas implements Runnable {
 		}
 
 		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
-
-
 		SpriteReference fullHeart = new SpriteReference(new Coordinate(0, 8 * 6), 4, 4);
 		SpriteReference emptyHeart = new SpriteReference(new Coordinate(4, 8 * 6), 4, 4);
 		// draw the player's health to the GUI Bar
 		for (int i = 0; i < player.maxHealth; i++) {
-
 			int x = 3 + i * 4 + screen.offset.x;
 			int y = yo + 9 + screen.offset.y;
 			if (i >= player.health) {
@@ -199,10 +188,7 @@ public class Game extends Canvas implements Runnable {
 			} else {
 				screen.drawSprite(fullHeart, x, y);
 			}
-
 		}
-
-
 	}
 
 	public void drawFocusText() {
@@ -211,7 +197,6 @@ public class Game extends Canvas implements Runnable {
 				screen.pixels[i] = Color.Adjust(screen.pixels[i], 0.3f);
 			}
 			String s1 = "Paused";
-
 			int sX = WIDTH / 2 - s1.length() * 6 / 2 - 5;
 			int sY = 5;
 			screen.drawSquare(sX, sY, sX + s1.length() * 6 + 9, sY + 42, 0xff000000);
@@ -229,4 +214,5 @@ public class Game extends Canvas implements Runnable {
 		Game game = new Game();
 		game.start();
 	}
+	
 }

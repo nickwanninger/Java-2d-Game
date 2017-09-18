@@ -7,6 +7,7 @@ import java.util.Comparator;
 import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
 import io.nickw.game.gfx.Screen;
+import io.nickw.game.tile.Air;
 import io.nickw.game.tile.Brick;
 import io.nickw.game.tile.Tile;
 
@@ -17,7 +18,7 @@ public class Level {
 	
 	boolean needsSorting = true;
 	
-	public Tile[] tiles;
+	public int[] tiles;
 	
 
 	private Comparator<GameObject> objectSorter = new Comparator<GameObject>() {
@@ -33,12 +34,12 @@ public class Level {
 		objects = new ArrayList<GameObject>();
 		this.width = width;
 		this.height = height;
-		tiles = new Tile[width * height];
+		tiles = new int[width * height];
 		for (int i = 0; i < (width * height); i++) {
 			int x = (i % width) * 8;
 			int y = (i / height) * 8;
-			if (x > y - 32) continue;
-			tiles[i] = new Brick(x, y, this);
+			if (Math.random() > 0.2 || y-1 == height) continue;
+			tiles[i] = 2;
 		}
 		
 	}
@@ -50,18 +51,18 @@ public class Level {
 	
 	public void render(Screen screen) {
 		
-		int xo = screen.offset.x / 8 - 1;
-		int yo = screen.offset.y / 8 - 1;
-		int w = (screen.width) / 8 + 2;
-		int h = (screen.height) / 8 + 2;
+		int xo = screen.offset.x / Tile.TILE_WIDTH - 2;
+		int yo = screen.offset.y / Tile.TILE_WIDTH - 2;
+		int w = (screen.width) / Tile.TILE_WIDTH + 4;
+		int h = (screen.height) / Tile.TILE_WIDTH + 4;
 		for (int x = xo; x < w + xo; x++ ) {
 			for (int y = yo; y < h + yo; y++ ) {
 				Tile tile = getTile(x,y);
 				if (tile != null) {
-					getTile(x,y).render(screen);
+					getTile(x,y).render(screen, x * Tile.TILE_WIDTH, y * Tile.TILE_WIDTH);
 				}
 				
-			}	
+			}
 		}
 		if (needsSorting) {
 			Collections.sort(objects, objectSorter);
@@ -74,8 +75,12 @@ public class Level {
 	
 	
 	public Tile getTile(int x, int y) {
-		if (x < 0 || y < 0 || x >= width || y >= height) return new Tile(x * 8,y * 8,this);;
-		return tiles[x + y * height];
+		if (x < 0 || y < 0 || x >= width || y >= height) return Tile.stone;
+		return Tile.tiles[tiles[x + y * height]];
+
+	}
+	public Tile getTileAtPixelPos(int x, int y) {
+		return getTile(x / Tile.TILE_WIDTH, y / Tile.TILE_WIDTH);
 	}
 
 	public Tile getTile(Coordinate t) {
@@ -96,6 +101,11 @@ public class Level {
 		for	(int i = 0; i < objects.size(); i++) {
 			objects.get(i).tick();
 		}
+	}
+
+
+	public boolean isPassable(int x, int y) {
+		return getTile(x,y).passable;
 	}
 }
 

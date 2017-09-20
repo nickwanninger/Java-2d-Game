@@ -16,13 +16,14 @@ import io.nickw.game.gfx.Screen;
 import io.nickw.game.gfx.Sprite;
 import io.nickw.game.gfx.SpriteReference;
 import io.nickw.game.level.Level;
+import io.nickw.game.tile.Tile;
 
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 120;
-	private static final int HEIGHT = 96;
-	private static final int windowWidth = 800;
+	private static final int WIDTH = 128;
+	private static final int HEIGHT = 128;
+	private static final int windowWidth = 600;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
 	private static final String NAME = "Java Game";
@@ -43,7 +44,7 @@ public class Game extends Canvas implements Runnable {
 	public static int tps = 0;
 
 	Font font = new Font();
-	Level level = new Level(10, 10);
+	Level level = new Level(100, 100);
 
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
@@ -68,7 +69,7 @@ public class Game extends Canvas implements Runnable {
 		screen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
 		screen.pixels = pixels;
 		input = new InputHandler(this);
-		player = new Player(level.width * 8 / 2 - 4, level.height * 8 / 2 - 4, level, input);
+		player = new Player(50 * Tile.TILE_WIDTH, 50 * Tile.TILE_WIDTH, level, input);
 		level.addObject(player);
 	}
 
@@ -99,7 +100,7 @@ public class Game extends Canvas implements Runnable {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = false;
+			boolean shouldRender = true;
 
 			while (delta >= 1) {
 				ticks++;
@@ -137,8 +138,8 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void render() {
-		int xo = player.position.x - (WIDTH - 8) / 2;
-		int yo = player.position.y - ((HEIGHT - 8) / 2) + 6;
+		int xo = player.position.x - (WIDTH - Tile.TILE_WIDTH) / 2;
+		int yo = player.position.y - ((HEIGHT - Tile.TILE_WIDTH) / 2) + 5;
 		screen.setOffset(xo, yo);
 
 		BufferStrategy bs = getBufferStrategy();
@@ -153,11 +154,11 @@ public class Game extends Canvas implements Runnable {
 		Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
 		Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
 
-		screen.clear(0xff5fcde4);
+		screen.clear(0xff00ff);
 
 		level.render(screen);
 		drawGUI(screen);
-//		drawFocusText();
+		drawFocusText();
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
@@ -165,18 +166,17 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void drawGUI(Screen screen) {
-		int yo = HEIGHT - 16;
+		int yo = HEIGHT - 8;
 		screen.drawSquare(0, yo - 1, WIDTH, yo, 0x000);
 
 		for (int x = 0; x < WIDTH; x ++) {
 			for (int y = 0; y < 16; y ++) {
 				int dy = y + yo;
-				int col = Color.Adjust(screen.getPixel(x, y + yo), 0.08f);
-				screen.setPixel(x, dy, col);
+				screen.setPixel(x, dy, 0x000000);
 			}
 		}
 
-		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
+//		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
 		SpriteReference fullHeart = new SpriteReference(new Coordinate(0, 8 * 6), 4, 4);
 		SpriteReference emptyHeart = new SpriteReference(new Coordinate(4, 8 * 6), 4, 4);
 		// draw the player's health to the GUI Bar

@@ -6,9 +6,8 @@ import java.util.Comparator;
 
 import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
+import io.nickw.game.dungeon.Dungeon;
 import io.nickw.game.gfx.Screen;
-import io.nickw.game.tile.Air;
-import io.nickw.game.tile.Brick;
 import io.nickw.game.tile.Tile;
 
 public class Level {
@@ -19,6 +18,8 @@ public class Level {
 	boolean needsSorting = true;
 	
 	public int[] tiles;
+
+	Dungeon dungeon;
 	
 
 	private Comparator<GameObject> objectSorter = new Comparator<GameObject>() {
@@ -34,14 +35,9 @@ public class Level {
 		objects = new ArrayList<GameObject>();
 		this.width = width;
 		this.height = height;
-		tiles = new int[width * height];
-		for (int i = 0; i < (width * height); i++) {
-			int x = (i % width) * 8;
-			int y = (i / height) * 8;
-			if (Math.random() > 0.2 || y-1 == height) continue;
-			tiles[i] = 2;
-		}
-		
+		dungeon = new Dungeon(width, height);
+		dungeon.Generate(System.currentTimeMillis());
+		tiles = dungeon.tileData;
 	}
 	
 	public void addObject(GameObject g) {
@@ -59,7 +55,7 @@ public class Level {
 			for (int y = yo; y < h + yo; y++ ) {
 				Tile tile = getTile(x,y);
 				if (tile != null) {
-					getTile(x,y).render(screen, x * Tile.TILE_WIDTH, y * Tile.TILE_WIDTH);
+					getTile(x,y).render(screen,this, x * Tile.TILE_WIDTH, y * Tile.TILE_WIDTH);
 				}
 				
 			}
@@ -75,10 +71,16 @@ public class Level {
 	
 	
 	public Tile getTile(int x, int y) {
-		if (x < 0 || y < 0 || x >= width || y >= height) return Tile.stone;
+		if (x < 0 || y < 0 || x >= width || y >= height) return Tile.wall;
 		return Tile.tiles[tiles[x + y * height]];
-
 	}
+
+
+	public int getTileType(int x, int y) {
+		if (x < 0 || y < 0 || x >= width || y >= height) return 1;
+		return tiles[x + y * height];
+	}
+
 	public Tile getTileAtPixelPos(int x, int y) {
 		return getTile(x / Tile.TILE_WIDTH, y / Tile.TILE_WIDTH);
 	}

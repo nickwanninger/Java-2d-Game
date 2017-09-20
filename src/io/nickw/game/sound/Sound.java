@@ -7,6 +7,7 @@ public class Sound {
 	public static final Sound hit = new Sound("/sound/Hit.wav");
 	public static final Sound jump = new Sound("/sound/Jump.wav");
 	public static final Sound land = new Sound("/sound/Land.wav");
+	public static final Sound step = new Sound("/sound/Step.wav");
 	
 	private AudioClip clip;
 

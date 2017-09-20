@@ -8,7 +8,7 @@ public class Air extends Tile {
 
 	public Air(int id) {
 		super(id);
-		passable = true;
+		this.passable = true;
 		sprite = new SpriteReference(new Coordinate(0, 0), 8, 8);
 	}
 

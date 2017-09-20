@@ -24,13 +24,12 @@ public class Player extends Entity {
 
 	private int attackCooldown = 200;
 	private long lastAttacked = System.currentTimeMillis();
-	private SpriteReference idleSprite = new SpriteReference(new Coordinate(0, 56), 8, 8);
-	private Animation walkAnimation = new Animation(4, new Coordinate(8, 56));
+	private Animation walkAnimation = new Animation(6, new Coordinate(8, 32), 8, 8);
 	public Player(int x, int y, Level level, InputHandler i) {
 
 		super(x, y, level);
 		this.level = level;
-		this.bounds = new Bounds(2, 1, 4,7);
+		this.bounds = new Bounds(2, 6, 4,2);
 		order = 5;
 		input = i;
 		walkAnimation.frameRate = 15;
@@ -47,9 +46,11 @@ public class Player extends Entity {
 			velocity.x += moveSpeed;
 		if (input.left.down)
 			velocity.x -= moveSpeed;
-		if (input.up.clicked && grounded) {
-			Sound.jump.play();
-			velocity.y = -jumpForce;
+		if (input.up.down) {
+			velocity.y = -moveSpeed;
+		}
+		if (input.down.down) {
+			velocity.y = +moveSpeed;
 		}
 
 		if (input.attack.down) {
@@ -59,23 +60,30 @@ public class Player extends Entity {
 				attack();
 			}
 		}
-		velocity.y += Game.gravity;
 		// gets the total unsigned movement
 		int movementMagnitude = (int) Math.abs(Math.sqrt((Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2))));
 		// if the unsigned movement magnitude is greater than 0, we must be moving.
 		moving = movementMagnitude > 0;
-		if (Math.abs(velocity.x) > 0) {
+		if (Math.abs(movementMagnitude) > 0) {
 			walking = true;
-			if (grounded) {
-				walkAnimation.tick();
+			SpriteReference prevSprite = walkAnimation.GetCurrentFrame();
+			walkAnimation.tick();
+			SpriteReference newSprite = walkAnimation.GetCurrentFrame();
+			if (prevSprite != newSprite && (walkAnimation.currentFrame % 2 == 0)) {
+				int sx = (int) (position.x + 3 - Math.signum(velocity.x));
+				int sy = position.y + 6 - (int) (Math.random() * 4);
+				level.addObject(new Smoke(sx, sy, level));
+				Sound.step.play();
+			}
+			if (Math.abs(velocity.x) > 0) {
+				if (velocity.x < 0) {
+					flipBits = 0x01;
+					direction = 3;
+				} else {
+					flipBits = 0x00;
+				}
 			}
 
-			if (velocity.x < 0) {
-				flipBits = 0x01;
-				direction = 3;
-			} else {
-				flipBits = 0x00;
-			}
 		} else {
 			walking = false;
 		}
@@ -83,13 +91,8 @@ public class Player extends Entity {
 		move();
 		
 		velocity.x = 0;
+		velocity.y = 0;
 	}
-
-
-	public void landed() {
-		Sound.land.play();
-	}
-
 
 	public void attack() {
 		Sound.hit.play();
@@ -97,7 +100,7 @@ public class Player extends Entity {
 
 	public void render(Screen screen) {
 		// get the sprite to draw
-		SpriteReference dS = idleSprite;
+		SpriteReference dS = new SpriteReference(new Coordinate(0, 32), 8, 8);
 		if (walking) {
 			dS = walkAnimation.GetCurrentFrame();
 		}

@@ -12,9 +12,7 @@ public class Entity extends GameObject {
 	public Vector2 velocity = new Vector2(0, 0);
 	public Level level;
 	public boolean grounded = false;
-	Bounds bounds = new Bounds(0,0,16,16);
-
-
+	Bounds bounds = new Bounds(0,0,8,8);
 
 	// constructor
 	public Entity(int x, int y, Level l) {
@@ -27,6 +25,52 @@ public class Entity extends GameObject {
 		moveX(level);
 		moveY(level);
 	}
+
+//	void moveX(Level level) {
+//		int tx;
+//		if (velocity.x == 0) return;
+//		if (velocity.x > 0) { // moving right
+//			tx = (int) (position.x + bounds.x + bounds.width - 1 + velocity.x) / Tile.TILE_WIDTH;
+//		} else {
+//			tx = (int) (position.x + bounds.x + velocity.x) / Tile.TILE_WIDTH;
+//		}
+//		boolean topPassable = level.getTile(tx, (position.y + bounds.y) / Tile.TILE_WIDTH).passable;
+//		boolean bottomPassable = level.getTile(tx, (position.y + bounds.y + bounds.height - 1) / Tile.TILE_WIDTH).passable;
+//		if (topPassable && bottomPassable) {
+//			this.position.x += velocity.x;
+//		} else {
+//			velocity.x = 0;
+//		}
+//	}
+//		void moveY(Level level) {
+//			if (velocity.y == 0) return;
+//			int ty;
+//			// moving up
+//			if (velocity.y < 0) {
+//				ty = (int) (position.y + bounds.y + velocity.y) / Tile.TILE_WIDTH;
+//			} else {
+//				ty = (int) (position.y + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
+//			}
+//			if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
+//				if (velocity.y < 0) {
+//					grounded = false;
+//				}
+//				this.position.y += velocity.y;
+//			} else {
+//				if (velocity.y > 0) { // going down
+//					if (!grounded) {
+//						landed();
+//						grounded = true;
+//					}
+//					this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
+//				} else if (velocity.y < 0) { // going up
+//					grounded = false;
+//					this.position.y = (ty + 1) * Tile.TILE_WIDTH + (bounds.height - Tile.TILE_WIDTH);
+//				}
+//				velocity.y = 0;
+//			}
+//		}
+
 
 	void moveX(Level level) {
 		int tx;
@@ -55,20 +99,16 @@ public class Entity extends GameObject {
 			ty = (int) (position.y + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
 		}
 		if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
-			if (velocity.y < 0) {
-				grounded = false;
-			}			this.position.y += velocity.y;
+			this.position.y += velocity.y;
 		} else {
-			if (velocity.y > 0) {
-				if (!grounded) {
-					landed();
-				}
-				this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
-				grounded = true;
-			} else if (velocity.y < 0) {
-				this.position.y = ty * Tile.TILE_WIDTH + bounds.height;
-				grounded = false;
-			}
+//			if (velocity.y > 0) {
+//				if (!grounded) {
+//					landed();
+//				}
+//				this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
+//			} else if (velocity.y < 0) {
+//				this.position.y = ty * Tile.TILE_WIDTH + bounds.height;
+//			}
 			velocity.y = 0;
 		}
 

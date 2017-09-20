@@ -10,16 +10,16 @@ public class Animation {
 	public int frameRate = 15;
 	public int loopCount = 0;
 	
-	public Animation(int frames, Coordinate startTile) {
+	public Animation(int frames, Coordinate startTile, int width, int height) {
 		sprites = new SpriteReference[frames];
 		// loop over the frames and create the
 		// references to the sheet for each one.
 		for (int i = 0; i < frames; i++) {
 			// the x and y coordinate of the frame on the sheet
-			int x = startTile.x + i * 8;
+			int x = startTile.x + i * width;
 			int y = startTile.y; // will be the same until wrapping animations are implemented
 			Coordinate sCoord = new Coordinate(x,y);
-			sprites[i] = new SpriteReference(sCoord, 8, 8);
+			sprites[i] = new SpriteReference(sCoord, width, height);
 		}
 	}
 	
@@ -45,6 +45,14 @@ public class Animation {
 	public void reset() {
 		tickCount = 0;
 		updateFrame();
+	}
+
+	public SpriteReference getFrame(int i) {
+		return sprites[i];
+	}
+
+	public int getFrameCount() {
+		return sprites.length;
 	}
 
 }

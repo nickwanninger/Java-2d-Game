@@ -1,5 +1,6 @@
 package io.nickw.game;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import io.nickw.game.gfx.*;
@@ -12,10 +13,10 @@ public class GameObject {
 	public SpriteReference sprite;
 	private boolean deleted = false;
 	public Level level;
-	public int order = -3000;
+	public int order = -1;
 	
 	public GameObject(int x, int y, Level l) {
-		this.level = l;
+		level = l;
 		id = new Random().nextLong();
 		this.position = new Coordinate(x,y);
 		this.sprite = new SpriteReference(new Coordinate(0,0), 8, 8);
@@ -46,6 +47,9 @@ public class GameObject {
 	public boolean isDeleted() {
 		return this.deleted;
 	}
+
+	public int getLightRadius() {return 0;}
+
 	
 	
 }

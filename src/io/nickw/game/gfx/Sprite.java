@@ -11,6 +11,8 @@ public class Sprite {
 	public int height;
 	public int[] pixels;
 	BufferedImage image;
+
+	public static int transparent_value = -1;
 	
 	public Sprite(String path) {
 		BufferedImage image = null;
@@ -32,10 +34,12 @@ public class Sprite {
 		int colorDepth = 4;
 		pixels = image.getRGB(0, 0, width, height, null, 0, width);
 		for (int i = 0; i < pixels.length; i++) {
-			// chop the alpha off of the color's int value
-            pixels[i] = pixels[i] & 0xffffff;
-         }
-		
+			if (pixels[i] == 0x00000000) {
+				pixels[i] = transparent_value;
+			} else {
+				pixels[i] = pixels[i] & 0xffffff;
+			}
+		}
 	}
 	
 	public int GetPixel(int x, int y) {

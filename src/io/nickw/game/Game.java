@@ -1,15 +1,13 @@
 package io.nickw.game;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.MouseInfo;
+import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.Random;
 import javax.swing.*;
 import io.nickw.game.entity.Player;
+import io.nickw.game.entity.Slime;
 import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.gfx.Screen;
@@ -22,14 +20,14 @@ public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
 	private static final int WIDTH = 128;
-	private static final int HEIGHT = 128;
-	private static final int windowWidth = 600;
+	private static final int HEIGHT = 96;
+	private static final int windowWidth = 800;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
 	private static final String NAME = "Java Game";
 	private JFrame frame;
 	private boolean running = false;
-	private int tickCount = 0;
+	public static int tickCount = 0;
 
 	public static float gravity = 0.1f;
 	public static float terminalVelocity = 3f;
@@ -38,6 +36,7 @@ public class Game extends Canvas implements Runnable {
 	private static int mouseY = 0;
 
 	private Screen screen;
+	private Screen lightScreen;
 	private InputHandler input;
 
 	public static int fps = 0;
@@ -68,9 +67,21 @@ public class Game extends Canvas implements Runnable {
 	public void init() {
 		screen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
 		screen.pixels = pixels;
+		lightScreen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
+
 		input = new InputHandler(this);
 		player = new Player(50 * Tile.TILE_WIDTH, 50 * Tile.TILE_WIDTH, level, input);
 		level.addObject(player);
+
+//		for (int i = 0; i < level.tiles.length; i++) {
+//			int tile = level.tiles[i];
+//			if (tile == 1 && Math.random() < 0.1) {
+//				int x = i / level.width * Tile.TILE_WIDTH;
+//				int y = i % level.width * Tile.TILE_WIDTH;
+//				Slime s = new Slime(x,y,level);
+//				level.addObject(s);
+//			}
+//		}
 	}
 
 	public void start() {
@@ -137,10 +148,21 @@ public class Game extends Canvas implements Runnable {
 		}
 	}
 
+
+
 	public void render() {
 		int xo = player.position.x - (WIDTH - Tile.TILE_WIDTH) / 2;
 		int yo = player.position.y - ((HEIGHT - Tile.TILE_WIDTH) / 2) + 5;
 		screen.setOffset(xo, yo);
+		lightScreen.setOffset(xo, yo);
+		lightScreen.clear(0);
+		screen.clear(0);
+
+		for (int i = 0; i < level.objects.size(); i++) {
+			GameObject g = level.objects.get(i);
+			lightScreen.renderLight(g.position.x + 4, g.position.y + 4, g.getLightRadius());
+		}
+		lightScreen.renderLight(400, 400, 60);
 
 		BufferStrategy bs = getBufferStrategy();
 		if (bs == null) {
@@ -148,17 +170,19 @@ public class Game extends Canvas implements Runnable {
 			requestFocus();
 			return;
 		}
-		// update the mouse location every frame:
-		int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
-		int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
-		Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
-		Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
-
-		screen.clear(0xff00ff);
 
 		level.render(screen);
+		// draw light screen over top the normal screen
+		screen.overlayLight(lightScreen, 0.05f);
 		drawGUI(screen);
-		drawFocusText();
+		if (hasFocus()) {
+			int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
+			int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
+			Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
+			Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
+		}
+		screen.drawLine(WIDTH / 2, HEIGHT / 2, Game.mouseX, Game.mouseY, 0xffffff);
+
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
 		g.dispose();
@@ -166,29 +190,13 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void drawGUI(Screen screen) {
-		int yo = HEIGHT - 8;
-		screen.drawSquare(0, yo - 1, WIDTH, yo, 0x000);
+		int yo = HEIGHT - 10;
 
-		for (int x = 0; x < WIDTH; x ++) {
-			for (int y = 0; y < 16; y ++) {
-				int dy = y + yo;
-				screen.setPixel(x, dy, 0x000000);
-			}
-		}
+		screen.drawSquare(0, yo, WIDTH, HEIGHT, 0x000000);
 
-//		Font.drawWithFrame(screen, Game.fps + "fps", 0, yo);
-		SpriteReference fullHeart = new SpriteReference(new Coordinate(0, 8 * 6), 4, 4);
-		SpriteReference emptyHeart = new SpriteReference(new Coordinate(4, 8 * 6), 4, 4);
-		// draw the player's health to the GUI Bar
-		for (int i = 0; i < player.maxHealth; i++) {
-			int x = 3 + i * 4 + screen.offset.x;
-			int y = yo + 9 + screen.offset.y;
-			if (i >= player.health) {
-				screen.drawSprite(emptyHeart, x, y);
-			} else {
-				screen.drawSprite(fullHeart, x, y);
-			}
-		}
+		Font.drawText(screen, Game.fps + "fps", 1, yo + 3, 0xffffff);
+
+
 	}
 
 	public void drawFocusText() {
@@ -199,7 +207,7 @@ public class Game extends Canvas implements Runnable {
 			String s1 = "Paused";
 			int sX = WIDTH / 2 - s1.length() * 6 / 2 - 5;
 			int sY = 5;
-			screen.drawSquare(sX, sY, sX + s1.length() * 6 + 9, sY + 42, 0xff000000);
+			screen.drawSquare(sX, sY, sX + s1.length() * 6 + 9, sY + 42, 0x000000);
 			Font.drawText(screen, s1, WIDTH / 2 - s1.length() * 6 / 2, 10, 0x008751);
 			if (Math.sin(tickCount / 4) >= 0) {
 				int ctfY = 20;

@@ -11,7 +11,7 @@ import io.nickw.game.gfx.Screen;
 import io.nickw.game.tile.Tile;
 
 public class Level {
-	public static ArrayList<GameObject> objects;
+	public ArrayList<GameObject> objects;
 	public int width;
 	public int height;
 	
@@ -24,8 +24,8 @@ public class Level {
 
 	private Comparator<GameObject> objectSorter = new Comparator<GameObject>() {
 		public int compare(GameObject e0, GameObject e1) {
-			if (e1.order < e0.order) return +1;
-			if (e1.order > e0.order) return -1;
+			if (e1.position.y < e0.position.y) return +1;
+			if (e1.position.y > e0.position.y) return -1;
 			return 0;
 		}
 	};
@@ -60,10 +60,7 @@ public class Level {
 				
 			}
 		}
-		if (needsSorting) {
-			Collections.sort(objects, objectSorter);
-			needsSorting = false;
-		}
+		Collections.sort(objects, objectSorter);
 		for	(int i = 0; i < objects.size(); i++) {
 			objects.get(i).render(screen);
 		}
@@ -71,13 +68,12 @@ public class Level {
 	
 	
 	public Tile getTile(int x, int y) {
-		if (x < 0 || y < 0 || x >= width || y >= height) return Tile.wall;
-		return Tile.tiles[tiles[x + y * height]];
+		return Tile.tiles[getTileType(x, y)];
 	}
 
 
 	public int getTileType(int x, int y) {
-		if (x < 0 || y < 0 || x >= width || y >= height) return 1;
+		if (x < 0 || y < 0 || x >= width || y >= height) return 0;
 		return tiles[x + y * height];
 	}
 

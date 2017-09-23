@@ -18,12 +18,12 @@ public class Floor extends Tile {
 	public void render(Screen screen, Level level, int x, int y) {
 		int tx = x / Tile.TILE_WIDTH;
 		int ty = y / Tile.TILE_WIDTH;
-		int seed = x % y * y + x;
+		int seed = x % 19 * y + x;
 		int tOffset = new Random(seed).nextInt(6) * 8;
 		if (level.getTileType(tx, ty - 1) != id) {
-			screen.drawSprite(new SpriteReference(new Coordinate(0 + tOffset, 16), 8, 8), x, y);
+			screen.drawSprite(new SpriteReference(new Coordinate(tOffset, 16), 8, 8), x, y);
 		} else {
-			screen.drawSprite(new SpriteReference(new Coordinate(0 + tOffset, 24), 8, 8), x, y);
+			screen.drawSprite(new SpriteReference(new Coordinate(tOffset, 24), 8, 8), x, y,  (x * y % 2)+ 1);
 		}
 	}
 

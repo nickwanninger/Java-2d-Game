@@ -71,6 +71,11 @@ public class InputHandler implements KeyListener {
 		if (ke.getKeyCode() == KeyEvent.VK_LEFT) left.toggle(pressed);
 		if (ke.getKeyCode() == KeyEvent.VK_RIGHT) right.toggle(pressed);
 
+		if (ke.getKeyCode() == KeyEvent.VK_W) up.toggle(pressed);
+		if (ke.getKeyCode() == KeyEvent.VK_S) down.toggle(pressed);
+		if (ke.getKeyCode() == KeyEvent.VK_A) left.toggle(pressed);
+		if (ke.getKeyCode() == KeyEvent.VK_D) right.toggle(pressed);
+
 		if (ke.getKeyCode() == KeyEvent.VK_X) menu.toggle(pressed);
 		if (ke.getKeyCode() == KeyEvent.VK_C) attack.toggle(pressed);
 	}

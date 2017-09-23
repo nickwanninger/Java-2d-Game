@@ -3,6 +3,8 @@ package io.nickw.game.entity;
 import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
 import io.nickw.game.Vector2;
+import io.nickw.game.gfx.Screen;
+import io.nickw.game.gfx.SpriteReference;
 import io.nickw.game.level.Level;
 import io.nickw.game.*;
 import io.nickw.game.tile.Tile;
@@ -13,6 +15,7 @@ public class Entity extends GameObject {
 	public Level level;
 	public boolean grounded = false;
 	Bounds bounds = new Bounds(0,0,8,8);
+	Direction dir = Direction.EAST;
 
 	// constructor
 	public Entity(int x, int y, Level l) {
@@ -22,57 +25,18 @@ public class Entity extends GameObject {
 
 	public void move() {
 		velocity.y = Math.min(Game.terminalVelocity, velocity.y);
-		moveX(level);
-		moveY(level);
+		moveX();
+		moveY();
+		if (Math.abs(velocity.y) > 0) {
+			dir = Math.signum(velocity.y) == 1 ? Direction.SOUTH : Direction.NORTH;
+		}
+		if (Math.abs(velocity.x) > 0) {
+			dir = Math.signum(velocity.x) == 1 ? Direction.EAST : Direction.WEST;
+		}
 	}
 
-//	void moveX(Level level) {
-//		int tx;
-//		if (velocity.x == 0) return;
-//		if (velocity.x > 0) { // moving right
-//			tx = (int) (position.x + bounds.x + bounds.width - 1 + velocity.x) / Tile.TILE_WIDTH;
-//		} else {
-//			tx = (int) (position.x + bounds.x + velocity.x) / Tile.TILE_WIDTH;
-//		}
-//		boolean topPassable = level.getTile(tx, (position.y + bounds.y) / Tile.TILE_WIDTH).passable;
-//		boolean bottomPassable = level.getTile(tx, (position.y + bounds.y + bounds.height - 1) / Tile.TILE_WIDTH).passable;
-//		if (topPassable && bottomPassable) {
-//			this.position.x += velocity.x;
-//		} else {
-//			velocity.x = 0;
-//		}
-//	}
-//		void moveY(Level level) {
-//			if (velocity.y == 0) return;
-//			int ty;
-//			// moving up
-//			if (velocity.y < 0) {
-//				ty = (int) (position.y + bounds.y + velocity.y) / Tile.TILE_WIDTH;
-//			} else {
-//				ty = (int) (position.y + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
-//			}
-//			if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
-//				if (velocity.y < 0) {
-//					grounded = false;
-//				}
-//				this.position.y += velocity.y;
-//			} else {
-//				if (velocity.y > 0) { // going down
-//					if (!grounded) {
-//						landed();
-//						grounded = true;
-//					}
-//					this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
-//				} else if (velocity.y < 0) { // going up
-//					grounded = false;
-//					this.position.y = (ty + 1) * Tile.TILE_WIDTH + (bounds.height - Tile.TILE_WIDTH);
-//				}
-//				velocity.y = 0;
-//			}
-//		}
 
-
-	void moveX(Level level) {
+	void moveX() {
 		int tx;
 		if (velocity.x == 0) return;
 		if (velocity.x > 0) { // moving right
@@ -89,7 +53,7 @@ public class Entity extends GameObject {
 		}
 	}
 
-	void moveY(Level level) {
+	void moveY() {
 		if (velocity.y == 0) return;
 		int ty;
 		// moving up
@@ -101,14 +65,6 @@ public class Entity extends GameObject {
 		if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
 			this.position.y += velocity.y;
 		} else {
-//			if (velocity.y > 0) {
-//				if (!grounded) {
-//					landed();
-//				}
-//				this.position.y = ty * Tile.TILE_WIDTH - bounds.height - 1;
-//			} else if (velocity.y < 0) {
-//				this.position.y = ty * Tile.TILE_WIDTH + bounds.height;
-//			}
 			velocity.y = 0;
 		}
 
@@ -116,5 +72,10 @@ public class Entity extends GameObject {
 
 	public void landed() {
 		// to be implemented in sub-classes
+	}
+
+
+	public void drawShadow(Screen screen) {
+		screen.drawSprite(new SpriteReference(new Coordinate(0,80), 8,8), position.x, position.y);
 	}
 }

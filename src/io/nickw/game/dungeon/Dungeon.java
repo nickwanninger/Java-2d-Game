@@ -90,6 +90,22 @@ public class Dungeon {
 		generateCorridors();
 
 
+//		for (int x = 0; x < width; x++) {
+//			for (int y = 0; y < height; y++) {
+//				if (getTile(x,y) == floorVal) {
+//					for (int xo = -1; xo < 2; xo++) {
+//						for (int yo = -1; yo < 2; yo++) {
+//							if (getTile(x + xo, y + yo) == 0) {
+//								setTile(x + xo, y + yo, 2);
+//							}
+//						}
+//					}
+//				}
+//
+//			}
+//		}
+
+
 	}
 
 	public int getTile(int x, int y) {

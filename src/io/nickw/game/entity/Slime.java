@@ -9,7 +9,7 @@ import io.nickw.game.level.Level;
 import java.util.Random;
 
 public class Slime extends Enemy {
-	public Slime(int x, int y, Level l) {
+	public Slime(float x, float y, Level l) {
 		super(x, y, l);
 		level = l;
 		this.bounds = new Bounds(2,4,4,4);
@@ -22,7 +22,7 @@ public class Slime extends Enemy {
 	}
 
 	public void render(Screen screen) {
-		screen.drawSprite(new SpriteReference(new Coordinate(32, 56), 8, 8), position.x, position.y);
+		screen.drawSprite(new SpriteReference(new Coordinate(32, 56), 8, 8), Math.round(position.x), Math.round(position.y));
 	}
 
 	public int getLightRadius() {return 30;}

@@ -33,8 +33,8 @@ public class Dungeon {
 		int roomCount = width;
 		rooms = new Room[roomCount];
 		for (int i = 0; i < roomCount; i++) {
-			int w = rng.nextInt(5) + 3;
-			int h = rng.nextInt(5) + 3;
+			int w = rng.nextInt(8) + 5;
+			int h = rng.nextInt(8) + 5;
 			int x = (int) (rng.nextInt(width / 3) + width / 3);
 			int y = (int) (rng.nextInt(height / 3) + height / 3);
 			rooms[i] = new Room(x, y, w, h);

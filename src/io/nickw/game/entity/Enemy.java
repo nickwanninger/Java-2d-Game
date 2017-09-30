@@ -6,7 +6,7 @@ import io.nickw.game.level.Level;
 
 public class Enemy extends Entity {
 	Bounds bounds = new Bounds(0,0,8,8);
-	public Enemy(int x, int y, Level l) {
+	public Enemy(float x, float y, Level l) {
 		super(x, y, l);
 	}
 }

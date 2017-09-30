@@ -2,6 +2,7 @@ package io.nickw.game.entity;
 
 import io.nickw.game.*;
 import io.nickw.game.gfx.Animation;
+import io.nickw.game.gfx.LightingType;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.gfx.SpriteReference;
 import io.nickw.game.level.Level;
@@ -21,16 +22,17 @@ public class Player extends Entity {
 	private int tickCount = 0;
 	private int flipBits = 0x00;
 
+	Screen screen;
 	private int attackCooldown = 200;
 	private long lastAttacked = System.currentTimeMillis();
 	private Animation LRAnimation = new Animation(6, new Coordinate(8, 32), 8, 8);
 	private Animation DownAnimation = new Animation(6, new Coordinate(8, 40), 8, 8);
 	private Animation UpAnimation = new Animation(6, new Coordinate(8, 48), 8, 8);
 	public Player(int x, int y, Level level, InputHandler i) {
-
 		super(x, y, level);
 		this.level = level;
-		this.bounds = new Bounds(2, 6, 4,2);
+		this.lightingType = LightingType.Fancy;
+		this.bounds = new Bounds(2, 3, 4,5);
 		order = 5;
 		input = i;
 		LRAnimation.frameRate = 15;
@@ -45,11 +47,11 @@ public class Player extends Entity {
 		float moveSpeed = 1f;
 		// apply the input to the speed value.
 		if (input.right.down) {
-			velocity.x += moveSpeed;
+			velocity.x = moveSpeed;
 		}
 
 		if (input.left.down) {
-			velocity.x -= moveSpeed;
+			velocity.x = -moveSpeed;
 		}
 
 		if (input.up.down) {
@@ -57,7 +59,7 @@ public class Player extends Entity {
 		}
 
 		if (input.down.down) {
-			velocity.y = +moveSpeed;
+			velocity.y = moveSpeed;
 		}
 
 		if (input.attack.down) {
@@ -83,8 +85,8 @@ public class Player extends Entity {
 			UpAnimation.tick();
 			SpriteReference newSprite = LRAnimation.GetCurrentFrame();
 			if (prevSprite != newSprite && (LRAnimation.currentFrame % 2 == 0)) {
-				int sx = (int) (position.x + 3 - Math.signum(velocity.x));
-				int sy = position.y + 6 - (int) (Math.random() * 4);
+				float sx = (int) (position.x + 3 - Math.signum(velocity.x));
+				float sy = position.y + 6 - (int) (Math.random() * 4);
 				level.addObject(new Smoke(sx, sy, level));
 //				Sound.step.play();
 
@@ -102,17 +104,25 @@ public class Player extends Entity {
 			walking = false;
 		}
 
-
-		
 		velocity.x = 0;
 		velocity.y = 0;
 	}
 
 	public void attack() {
-		Sound.hit.play();
+//		Sound.shoot.play();
+		float aimX = screen.offset.x + Game.mouseX - (position.x + 4);
+		float aimY = screen.offset.y + Game.mouseY - (position.y + 4);
+		double speed = 0.5;
+		double multiplier = speed / Math.sqrt(Math.pow(aimX, 2) + Math.pow(aimY, 2));
+		aimX *= multiplier;
+		aimY *= multiplier;
+		Vector2 v = new Vector2(aimX, aimY);
+		Projectile p = new Projectile(position.x, position.y, v, level);
+		level.addObject(p);
 	}
 
 	public void render(Screen screen) {
+		this.screen = screen;
 		// get the sprite to draw
 		SpriteReference dS = new SpriteReference(new Coordinate(0, 32), 8, 8);;
 		if (dir == Direction.EAST || dir == Direction.WEST) {
@@ -140,10 +150,10 @@ public class Player extends Entity {
 		}
 
 		drawShadow(screen);
-		screen.drawSprite(dS, position.x, position.y, flipBits);
+		screen.drawSprite(dS, Math.round(position.x), Math.round(position.y), flipBits);
 //		bounds.render(screen, position);
 	}
 
-	public int getLightRadius() {return 20;}
+	public int getLightRadius() {return 50;}
 
 }

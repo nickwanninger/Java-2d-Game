@@ -18,13 +18,12 @@ public class Entity extends GameObject {
 	Direction dir = Direction.EAST;
 
 	// constructor
-	public Entity(int x, int y, Level l) {
+	public Entity(float x, float y, Level l) {
 		// construct with super class
 		super(x, y, l);
 	}
 
 	public void move() {
-		velocity.y = Math.min(Game.terminalVelocity, velocity.y);
 		moveX();
 		moveY();
 		if (Math.abs(velocity.y) > 0) {
@@ -38,17 +37,20 @@ public class Entity extends GameObject {
 
 	void moveX() {
 		int tx;
+		int px = Math.round(position.x);
+		int py = Math.round(position.y);
 		if (velocity.x == 0) return;
 		if (velocity.x > 0) { // moving right
-			tx = (int) (position.x + bounds.x + bounds.width - 1 + velocity.x) / Tile.TILE_WIDTH;
+			tx = (int) (px + bounds.x + bounds.width - 1 + velocity.x) / Tile.TILE_WIDTH;
 		} else {
-			tx = (int) (position.x + bounds.x + velocity.x) / Tile.TILE_WIDTH;
+			tx = (int) (px + bounds.x + velocity.x) / Tile.TILE_WIDTH;
 		}
-		boolean topPassable = level.getTile(tx, (position.y + bounds.y) / Tile.TILE_WIDTH).passable;
-		boolean bottomPassable = level.getTile(tx, (position.y + bounds.y + bounds.height - 1) / Tile.TILE_WIDTH).passable;
+		boolean topPassable = level.getTile(tx, (py + bounds.y) / Tile.TILE_WIDTH).passable;
+		boolean bottomPassable = level.getTile(tx, (py + bounds.y + bounds.height - 1) / Tile.TILE_WIDTH).passable;
 		if (topPassable && bottomPassable) {
 			this.position.x += velocity.x;
 		} else {
+			hitWall();
 			velocity.x = 0;
 		}
 	}
@@ -56,26 +58,29 @@ public class Entity extends GameObject {
 	void moveY() {
 		if (velocity.y == 0) return;
 		int ty;
+		int px = Math.round(position.x);
+		int py = Math.round(position.y);
 		// moving up
 		if (velocity.y < 0) {
-			ty = (int) (position.y + bounds.y + velocity.y) / Tile.TILE_WIDTH;
+			ty = (int) (py + bounds.y + velocity.y) / Tile.TILE_WIDTH;
 		} else {
-			ty = (int) (position.y + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
+			ty = (int) (py + bounds.y + bounds.height - 1 + velocity.y) / Tile.TILE_WIDTH;
 		}
-		if (level.getTile((position.x + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((position.x + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
+		if (level.getTile((px + bounds.x + bounds.width - 1) / Tile.TILE_WIDTH, ty).passable && level.getTile((px + bounds.x) / Tile.TILE_WIDTH, ty).passable) {
 			this.position.y += velocity.y;
 		} else {
+			hitWall();
 			velocity.y = 0;
 		}
 
 	}
 
-	public void landed() {
-		// to be implemented in sub-classes
+	public void hitWall() {
+
 	}
 
 
 	public void drawShadow(Screen screen) {
-		screen.drawSprite(new SpriteReference(new Coordinate(0,80), 8,8), position.x, position.y);
+		screen.drawSprite(new SpriteReference(new Coordinate(0,80), 8,8), Math.round(position.x), Math.round(position.y));
 	}
 }

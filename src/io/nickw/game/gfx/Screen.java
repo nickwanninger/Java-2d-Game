@@ -3,9 +3,6 @@ package io.nickw.game.gfx;
 import io.nickw.game.Coordinate;
 import io.nickw.game.Game;
 import io.nickw.game.level.Level;
-import io.nickw.game.tile.Tile;
-
-import java.io.Serializable;
 
 public class Screen {
 
@@ -18,7 +15,6 @@ public class Screen {
 	public int[] pixels;
 
 	public Screen(int width, int height, Sprite sheet) {
-
 		this.width = width;
 		this.height = height;
 		this.sheet = sheet;
@@ -65,8 +61,8 @@ public class Screen {
 		double x = x0;
 		double y = y0;
 		for (int i = 0; i < stepCount + 1; i++) {
-			int drawx = (int) Math.round(x);
-			int drawy = (int) Math.round(y);
+			int drawx = (int) Math.round(x) - offset.x;
+			int drawy = (int) Math.round(y) - offset.y;
 			setPixel(drawx, drawy, col);
 			x = x + stepX;
 			y = y + stepY;
@@ -117,59 +113,6 @@ public class Screen {
 	}
 
 
-	public int[] dither = new int[]{0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5,};
-
-
-	public void overlayLight(Screen screen2, float darkLevel) {
-		int[] oPixels = screen2.pixels;
-
-		for (int i = 0; i < height * width; i++) {
-			int x = i / width;
-			int y = i % width;
-			int dx = (int) (x + Game.tickCount / 20f) & 3;
-			int dy = (int) (y + Game.tickCount / 25f) & 3;
-			if (oPixels[i] / 10 <= dither[dx + dy * 4]) {
-				pixels[i] = Color.lerp(0x1c1018, pixels[i], darkLevel);
-			}
-		}
-	}
-
-
-	public void renderLight(int x, int y, int r) {
-		x -= offset.x;
-		y -= offset.y;
-		int x0 = x - r;
-		int x1 = x + r;
-		int y0 = y - r;
-		int y1 = y + r;
-		if (x0 < 0) {
-			x0 = 0;
-		}
-		if (y0 < 0) {
-			y0 = 0;
-		}
-		if (x1 > width) {
-			x1 = width;
-		}
-		if (y1 > height) {
-			y1 = height;
-		}
-		for (int yy = y0; yy < y1; yy++) {
-			int yd = yy - y;
-			yd = yd * yd;
-			for (int xx = x0; xx < x1; xx++) {
-				int xd = xx - x;
-				int dist = xd * xd + yd;
-				// System.out.println(dist);
-				if (dist <= r * r) {
-					int br = 255 - dist * 255 / (r * r);
-					if (pixels[xx + yy * width] < br) {
-						pixels[xx + yy * width] = br;
-					}
-				}
-			}
-		}
-	}
 
 
 }

@@ -22,6 +22,7 @@ public class Color {
 	}
 
 	public static int lerp(int c1, int c2, float alpha) {
+		alpha = Math.max(Math.min(alpha, 1f), 0f);
 		int r1 = (c1 >> 16) & 0xff;
 		int g1 = (c1 >> 8) & 0xff;
 		int b1 = (c1) & 0xff;

@@ -1,6 +1,5 @@
 package io.nickw.game;
 
-import java.io.Serializable;
 import java.util.Random;
 
 import io.nickw.game.gfx.*;
@@ -8,17 +7,18 @@ import io.nickw.game.level.Level;
 
 public class GameObject {
 	
-	public Coordinate position;
+	public Vector2 position;
 	public long id;
 	public SpriteReference sprite;
 	private boolean deleted = false;
 	public Level level;
 	public int order = -1;
+	public LightingType lightingType = LightingType.Fast;
 	
-	public GameObject(int x, int y, Level l) {
-		level = l;
-		id = new Random().nextLong();
-		this.position = new Coordinate(x,y);
+	public GameObject(float x, float y, Level l) {
+		this.level = l;
+		this.id = new Random().nextLong();
+		this.position = new Vector2(x,y);
 		this.sprite = new SpriteReference(new Coordinate(0,0), 8, 8);
 	}
 
@@ -30,8 +30,8 @@ public class GameObject {
 	public void render(Screen screen) {
 		if (deleted) return;
 		// render coordinates
-		int rx = this.position.x;
-		int ry = this.position.y;
+		int rx = Math.round(this.position.x);
+		int ry = Math.round(this.position.y);
 		screen.drawSprite(sprite, rx, ry);
 	}
 	

@@ -7,6 +7,7 @@ import java.util.Comparator;
 import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
 import io.nickw.game.dungeon.Dungeon;
+import io.nickw.game.gfx.LightingType;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.tile.Tile;
 
@@ -22,12 +23,10 @@ public class Level {
 	Dungeon dungeon;
 	
 
-	private Comparator<GameObject> objectSorter = new Comparator<GameObject>() {
-		public int compare(GameObject e0, GameObject e1) {
-			if (e1.position.y < e0.position.y) return +1;
-			if (e1.position.y > e0.position.y) return -1;
-			return 0;
-		}
+	private Comparator<GameObject> objectSorter = (e0, e1) -> {
+		if (e1.position.y < e0.position.y) return +1;
+		if (e1.position.y > e0.position.y) return -1;
+		return 0;
 	};
 	
 	
@@ -39,6 +38,7 @@ public class Level {
 		dungeon.Generate(System.currentTimeMillis());
 		tiles = dungeon.tileData;
 	}
+
 	
 	public void addObject(GameObject g) {
 		needsSorting = true;
@@ -46,7 +46,6 @@ public class Level {
 	}
 	
 	public void render(Screen screen) {
-		
 		int xo = screen.offset.x / Tile.TILE_WIDTH - 2;
 		int yo = screen.offset.y / Tile.TILE_WIDTH - 2;
 		int w = (screen.width) / Tile.TILE_WIDTH + 4;

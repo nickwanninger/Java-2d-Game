@@ -2,7 +2,7 @@ package io.nickw.game.gfx;
 
 public class Font {
 	private static Sprite fontData;
-	private static String chars = " ABCDEFGHIJKLMNOPQRSTUVWZYZ:;,.!?><()_/\\0123456789";
+	private static String chars = " ABCDEFGHIJKLMNOPQRSTUVWZYZ:;,.!?><()_/\\0123456789%";
 	
 	public Font() {
 		Font.fontData = new Sprite("/font.png");

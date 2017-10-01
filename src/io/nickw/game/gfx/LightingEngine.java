@@ -30,22 +30,30 @@ public class LightingEngine implements Runnable {
 
 	public void run() {
 		int[] buffer = new int[pixels.length];
+		int[] ownership = new int[pixels.length];
 		while (true) {
 			for (int i = 0; i < buffer.length; i++) buffer[i] = 0;
+			for (int i = 0; i < ownership.length; i++) ownership[i] = -1;
 			if (shouldRender) {
 				for	(int i = 0; i < level.objects.size(); i++) {
 					GameObject o = level.objects.get(i);
-					LightingType type = o.lightingType;
-					int radius = o.getLightRadius();
-					int px = Math.round(o.position.x + 4);
-					int py = Math.round(o.position.y + 4);
-					if (Math.abs(radius) > 0) {
-						if (type == LightingType.Fancy) {
-							renderPointLightAdvanced(px, py, radius, buffer);
-						} else if (type == LightingType.Fast) {
-							renderPointLightBasic(px, py, radius, buffer);
+					if (!(o == null)) {
+						int color = o.getLightColor();
+						LightingType type = o.lightingType;
+						int radius = o.getLightRadius();
+						int px = Math.round(o.position.x + 4);
+						int py = Math.round(o.position.y + 4);
+						if (Math.abs(radius) > 0) {
+							if (type == LightingType.Fancy) {
+								renderPointLightAdvanced(px, py, radius, color, buffer, i, ownership);
+							} else if (type == LightingType.Fast) {
+								renderPointLightBasic(px, py, radius, buffer);
+							}
 						}
+					} else {
+						System.out.println("Object doesnt exist, skipping");
 					}
+
 				}
 				pixels = buffer.clone();
 			}
@@ -96,7 +104,7 @@ public class LightingEngine implements Runnable {
 	}
 
 
-	public void renderPointLightAdvanced(int x0, int y0, int r, int[] pixels) {
+	public void renderPointLightAdvanced(int x0, int y0, int r, int color, int[] pixels, int id, int[] ownership) {
 		double tau = 2 * Math.PI;
 		double drawCount = 360d;
 		double radius = (double) r;
@@ -159,15 +167,13 @@ public class LightingEngine implements Runnable {
 			int y = i % width;
 			int dx = (int) (x + offset.x) & 3;
 			int dy = (int) (y + offset.y) & 3;
+			float intensity = Color.getIntensity(pixels[i]);
 			float alpha = pixels[i] / 255f;
 
 			screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], alpha);
 
 			if (pixels[i] / 10 <= dither[dx + dy * 4]) {
-//				screen.pixels[i] = 0x000000;
-//				screen.pixels[i] = Color.lerp(0, screen.pixels[i], alpha * 2);
-			} else {
-//				screen.pixels[i] = screen.pixels[i];//Color.lerp(0x0e0d15, screen.pixels[i], alpha);
+				screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], alpha);
 			}
 		}
 	}

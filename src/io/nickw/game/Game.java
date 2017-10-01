@@ -13,13 +13,15 @@ import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.level.Level;
 import io.nickw.game.tile.Tile;
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 200;
-	private static final int HEIGHT = 180;
-	private static final int windowWidth = 700;
+	private static final int WIDTH = 180;
+	private static final int HEIGHT = 120;
+	private static final int windowWidth = 1000;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
 	private static final String NAME = "Java Game";
@@ -36,6 +38,7 @@ public class Game extends Canvas implements Runnable {
 	private Screen screen;
 	private Screen lightScreen;
 	private InputHandler input;
+	public static Mouse mouse = new Mouse();
 
 	public static int fps = 0;
 	public static int tps = 0;
@@ -47,6 +50,7 @@ public class Game extends Canvas implements Runnable {
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 	LightingEngine lightingEngine;
 	Player player;
+	OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
 	public Game() {
 		setMinimumSize(new Dimension(windowWidth, windowHeight));
@@ -60,6 +64,7 @@ public class Game extends Canvas implements Runnable {
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+		addMouseListener(mouse);
 	}
 
 	public void init() {
@@ -103,13 +108,9 @@ public class Game extends Canvas implements Runnable {
 				ticks++;
 				tick();
 				delta -= 1;
-
+				frames++;
+				render();
 			}
-
-			frames++;
-			render();
-
-
 
 			double deltaT = System.currentTimeMillis() - lastTimer;
 
@@ -143,10 +144,14 @@ public class Game extends Canvas implements Runnable {
 	}
 
 
-
 	public void render() {
 		int xo = (int) player.position.x - (WIDTH - Tile.TILE_WIDTH) / 2;
-		int yo = (int) player.position.y - ((HEIGHT - Tile.TILE_WIDTH) / 2) + 5;
+		int yo = (int) player.position.y - (HEIGHT - Tile.TILE_WIDTH) / 2  ;
+
+		xo += (player.velocity.x * 5);
+		yo += (player.velocity.y * 5);
+
+		lightingEngine.setOffset(xo, yo);
 		screen.setOffset(xo, yo);
 		screen.clear(0);
 
@@ -158,14 +163,21 @@ public class Game extends Canvas implements Runnable {
 		}
 
 
-		lightingEngine.setOffset(xo, yo);
-
-//		lightingEngine.shouldRender = !hasFocus();
-
 		level.render(screen);
 		// draw light screen over top the normal screen
 		lightingEngine.overlayOntoScreen(screen);
+
+//		for (int i = 0; i < screen.pixels.length; i++) {
+//			float d = (float) Math.max(Math.random() - 0.7f, 0f);
+//			screen.pixels[i] = Color.desaturate(screen.pixels[i], 0.9f);
+//		}
+
+
 		drawGUI(screen);
+		if (input.debug.down) {
+			drawDebug(screen);
+		}
+
 
 
 		Graphics g = bs.getDrawGraphics();
@@ -175,9 +187,36 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void drawGUI(Screen screen) {
-		int yo = HEIGHT - 10;
-//		screen.drawSquare(0, yo, WIDTH, HEIGHT, 0x000000);
-//		Font.drawText(screen, Game.fps + "fps", 1, yo + 3, 0xffffff);
+		SpriteReference s_mana = new SpriteReference(new Coordinate(4, 112), 4, 4);
+		SpriteReference s_health = new SpriteReference(new Coordinate(0, 112), 4, 4);
+		SpriteReference s_empty = new SpriteReference(new Coordinate(0, 116), 4, 4);
+
+		for (int i = 0; i < player.mana; i++) {
+			SpriteReference toDraw = i < player.maxMana ? s_mana : s_empty;
+			screen.drawSpriteGUI(toDraw, 1 + 4 * i, 1);
+		}
+
+		for (int i = 0; i < player.health; i++) {
+			SpriteReference toDraw = i <= player.maxHealth ? s_health : s_empty;
+			screen.drawSpriteGUI(toDraw, 1 + 4 * i, 6);
+		}
+
+	}
+
+	public void drawDebug(Screen screen) {
+		String[] lines = new String[] {
+				Game.fps + "fps",
+				Game.tps + "tps",
+				tickCount + " ticks",
+				level.objects.size() + " objects",
+				"mouse: " + (Mouse.left.down ? "clicked" : "released"),
+				"CPU: " + Math.round(operatingSystemMXBean.getProcessCpuLoad() * 100) + "%"
+		};
+
+		for (int i = 0; i < lines.length; i++) {
+			Font.drawText(screen, lines[i], 1, 1 + 7 * i, 0xffffff);
+		}
+
 	}
 
 	public void drawFocusText() {

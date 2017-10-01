@@ -13,7 +13,7 @@ public class GameObject {
 	private boolean deleted = false;
 	public Level level;
 	public int order = -1;
-	public LightingType lightingType = LightingType.Fast;
+	public LightingType lightingType = LightingType.Fancy;
 	
 	public GameObject(float x, float y, Level l) {
 		this.level = l;
@@ -49,6 +49,10 @@ public class GameObject {
 	}
 
 	public int getLightRadius() {return 0;}
+
+	public int getLightColor() {
+		return 0xffffff;
+	}
 
 	
 	

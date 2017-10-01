@@ -9,6 +9,10 @@ public class Sound {
 	public static final Sound land = new Sound("/sound/Land.wav");
 	public static final Sound step = new Sound("/sound/Step.wav");
 	public static final Sound shoot = new Sound("/sound/Shoot.wav");
+	public static final Sound explosion = new Sound("/sound/Explosion.wav");
+	public static final Sound flame = new Sound("/sound/Flame.wav");
+	public static final Sound poof = new Sound("/sound/Poof.wav");
+
 	
 	private AudioClip clip;
 

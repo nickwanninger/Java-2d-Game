@@ -34,6 +34,13 @@ public class Color {
 		int b = lerpVal(b1, b2, alpha);
 		return r << 16 | g << 8 | b;
 	}
+
+	public static int getIntensity(int c) {
+		int r = (c >> 16) & 0xff;
+		int g = (c >> 8) & 0xff;
+		int b = (c) & 0xff;
+		return (int) (((r / 255.0) * 0.3 + (g / 255.0) * 0.59 + (b / 255.0) * 0.11) * 255);
+	}
 	
 	public static int get(int d) {
 		if (d < 0) return 255;
@@ -41,6 +48,18 @@ public class Color {
 		int g = d / 10 % 10;
 		int b = d % 10;
 		return r * 36 + g * 6 + b;
+	}
+
+
+	public static int desaturate(int c, float f) {
+		int r = (c >> 16) & 0xff;
+		int g = (c >> 8) & 0xff;
+		int b = (c) & 0xff;
+		double L = 0.3*r + 0.6*g + 0.1*b;
+		int new_r = (int) (r + f * (L - r));
+		int new_g = (int) (g + f * (L - g));
+		int new_b = (int) (b + f * (L - b));
+		return new_r << 16 | new_g << 8 | new_b;
 	}
 
 }

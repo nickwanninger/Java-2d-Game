@@ -14,8 +14,9 @@ public class Entity extends GameObject {
 	public Vector2 velocity = new Vector2(0, 0);
 	public Level level;
 	public boolean grounded = false;
-	Bounds bounds = new Bounds(0,0,8,8);
+	public Bounds bounds = new Bounds(0,0,8,8);
 	Direction dir = Direction.EAST;
+	Vector2 dirVector = new Vector2(1,0);
 
 	// constructor
 	public Entity(float x, float y, Level l) {
@@ -31,6 +32,21 @@ public class Entity extends GameObject {
 		}
 		if (Math.abs(velocity.x) > 0) {
 			dir = Math.signum(velocity.x) == 1 ? Direction.EAST : Direction.WEST;
+		}
+
+		switch (dir) {
+			case NORTH:
+				dirVector = new Vector2(0,-1);
+				break;
+			case EAST:
+				dirVector = new Vector2(1,0);
+				break;
+			case SOUTH:
+				dirVector = new Vector2(0,1);
+				break;
+			case WEST:
+				dirVector = new Vector2(-1,0);
+				break;
 		}
 	}
 

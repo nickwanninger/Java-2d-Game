@@ -1,6 +1,7 @@
-package io.nickw.game.entity;
+package io.nickw.game.entity.particle;
 
 import io.nickw.game.Coordinate;
+import io.nickw.game.entity.Entity;
 import io.nickw.game.gfx.Animation;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.level.Level;
@@ -18,7 +19,8 @@ public class Smoke extends Entity {
 		tickCount++;
 		animation.tick();
 		if (tickCount >= 15) destroy();
-
+		position.x += velocity.x;
+		position.y += velocity.y;
 	}
 
 	public void render(Screen screen) {

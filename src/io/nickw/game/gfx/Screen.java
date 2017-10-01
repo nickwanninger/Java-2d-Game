@@ -10,7 +10,7 @@ public class Screen {
 	public int height;
 	public Sprite sheet;
 	public int[][] sprites;
-	public Coordinate offset;
+	public Coordinate offset = new Coordinate(0,0);
 
 	public int[] pixels;
 

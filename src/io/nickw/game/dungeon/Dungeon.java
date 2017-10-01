@@ -33,8 +33,8 @@ public class Dungeon {
 		int roomCount = width;
 		rooms = new Room[roomCount];
 		for (int i = 0; i < roomCount; i++) {
-			int w = rng.nextInt(8) + 5;
-			int h = rng.nextInt(8) + 5;
+			int w = rng.nextInt(8) + 8;
+			int h = rng.nextInt(8) + 8;
 			int x = (int) (rng.nextInt(width / 3) + width / 3);
 			int y = (int) (rng.nextInt(height / 3) + height / 3);
 			rooms[i] = new Room(x, y, w, h);
@@ -90,20 +90,6 @@ public class Dungeon {
 		generateCorridors();
 
 
-//		for (int x = 0; x < width; x++) {
-//			for (int y = 0; y < height; y++) {
-//				if (getTile(x,y) == floorVal) {
-//					for (int xo = -1; xo < 2; xo++) {
-//						for (int yo = -1; yo < 2; yo++) {
-//							if (getTile(x + xo, y + yo) == 0) {
-//								setTile(x + xo, y + yo, 2);
-//							}
-//						}
-//					}
-//				}
-//
-//			}
-//		}
 
 
 	}
@@ -157,7 +143,7 @@ public class Dungeon {
 		for (int q = 0; q < rooms.length; q++) {
 			for (int j = q + 1; j < rooms.length; j++) {
 				if (q != j) {
-					if (DistanceBetweenRooms(rooms[q], rooms[j]) < 12) {
+					if (DistanceBetweenRooms(rooms[q], rooms[j]) < 18) {
 						BuildPath(rooms[q], rooms[j]);
 					}
 				}

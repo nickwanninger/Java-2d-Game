@@ -1,31 +1,42 @@
 package io.nickw.game;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.Random;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import io.nickw.game.entity.Player;
-import io.nickw.game.entity.Slime;
 import io.nickw.game.gfx.*;
 import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.level.Level;
 import io.nickw.game.tile.Tile;
+
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.sun.management.OperatingSystemMXBean;
+import io.nickw.game.util.InputHandler;
+import io.nickw.game.util.Mouse;
 
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 180;
-	private static final int HEIGHT = 120;
-	private static final int windowWidth = 1000;
+	public static final int WIDTH = 120;
+	public static final int HEIGHT = 100;
+	private static final int windowWidth = 800;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
+	public ArrayList<Integer> performanceHistory = new ArrayList<>();
+
 	private static final String NAME = "Java Game";
-	private JFrame frame;
+	private GameFrame frame;
 	private boolean running = false;
 	public static int tickCount = 0;
 
@@ -34,6 +45,8 @@ public class Game extends Canvas implements Runnable {
 
 	public static int mouseX = 0;
 	public static int mouseY = 0;
+
+	public static String OS = System.getProperty("os.name").toLowerCase();
 
 	private Screen screen;
 	private Screen lightScreen;
@@ -52,11 +65,14 @@ public class Game extends Canvas implements Runnable {
 	Player player;
 	OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
+
+
 	public Game() {
+
 		setMinimumSize(new Dimension(windowWidth, windowHeight));
 		setMaximumSize(new Dimension(windowWidth, windowHeight));
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
-		frame = new JFrame(Game.NAME);
+		frame = new GameFrame(Game.NAME);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 		frame.add(this, BorderLayout.CENTER);
@@ -65,14 +81,46 @@ public class Game extends Canvas implements Runnable {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		addMouseListener(mouse);
+
+		JPanel keyPanel = new JPanel();
+
+		frame.add(keyPanel, BorderLayout.CENTER);
+		input = new InputHandler(keyPanel);
+
+
+		addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				updateCursor();
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+
+			}
+		});
+	}
+
+	public void updateCursor() {
+		BufferedImage cursorImg = null;
+		try {
+			cursorImg = ImageIO.read(GameFrame.class.getResource("/cursor.png"));
+			Cursor cursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(8, 8), "blank cursor");
+			setCursor(cursor);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void init() {
+//		Process p = java.lang.Runtime.exec("ls");
+
 		lightingEngine = new LightingEngine(WIDTH, HEIGHT, level);
 		screen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
 		screen.pixels = pixels;
 		lightScreen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
-		input = new InputHandler(this);
+
 		player = new Player(50 * Tile.TILE_WIDTH, 50 * Tile.TILE_WIDTH, level, input);
 		level.addObject(player);
 	}
@@ -112,13 +160,19 @@ public class Game extends Canvas implements Runnable {
 				render();
 			}
 
+			try {
+				Thread.sleep(2);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
 			double deltaT = System.currentTimeMillis() - lastTimer;
 
 			if (deltaT >= 1000) {
 				lastTimer += 1000;
 				Game.fps = frames;
 				Game.tps = ticks;
-				System.out.println(frames + " frames " + ticks + " ticks ");
+				performanceHistory.add(frames);
 				frames = 0;
 				ticks = 0;
 			}
@@ -126,7 +180,6 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void tick() {
-
 		if (hasFocus()) {
 			int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
 			int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
@@ -134,13 +187,15 @@ public class Game extends Canvas implements Runnable {
 			Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
 		}
 
-		input.tick();
+
 		tickCount++;
 		if (!hasFocus()) {
 			input.releaseAll();
 		} else {
 			level.tick();
 		}
+		input.tick();
+
 	}
 
 
@@ -162,16 +217,12 @@ public class Game extends Canvas implements Runnable {
 			return;
 		}
 
-
 		level.render(screen);
-		// draw light screen over top the normal screen
 		lightingEngine.overlayOntoScreen(screen);
 
 //		for (int i = 0; i < screen.pixels.length; i++) {
-//			float d = (float) Math.max(Math.random() - 0.7f, 0f);
-//			screen.pixels[i] = Color.desaturate(screen.pixels[i], 0.9f);
+//			screen.pixels[i] = Color.lerp(screen.pixels[i], 0xffffff, 0.1f);
 //		}
-
 
 		drawGUI(screen);
 		if (input.debug.down) {
@@ -179,6 +230,7 @@ public class Game extends Canvas implements Runnable {
 		}
 
 
+		player.drawMenus(screen);
 
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
@@ -187,60 +239,59 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void drawGUI(Screen screen) {
-		SpriteReference s_mana = new SpriteReference(new Coordinate(4, 112), 4, 4);
-		SpriteReference s_health = new SpriteReference(new Coordinate(0, 112), 4, 4);
-		SpriteReference s_empty = new SpriteReference(new Coordinate(0, 116), 4, 4);
 
-		for (int i = 0; i < player.mana; i++) {
-			SpriteReference toDraw = i < player.maxMana ? s_mana : s_empty;
-			screen.drawSpriteGUI(toDraw, 1 + 4 * i, 1);
+		screen.drawSpriteGUI(new SpriteReference(200, 0, 46, 12), 0, 0);
+		SpriteReference s_mana = new SpriteReference(new Coordinate(193, 0), 1, 4);
+		SpriteReference s_health = new SpriteReference(new Coordinate(192, 0), 1, 4);
+
+		int drawCount = 33;
+
+		double healthPercentage = player.health / (double) player.maxHealth;
+		double manaPercentage = player.mana / (double) player.maxMana;
+
+		int healthDrawCount = (int) (healthPercentage * drawCount);
+		int manaDrawCount = (int) (manaPercentage * drawCount);
+
+		for (int i = 0; i < healthDrawCount; i++) {
+			screen.drawSpriteGUI(s_health, 11 + i, 2);
 		}
 
-		for (int i = 0; i < player.health; i++) {
-			SpriteReference toDraw = i <= player.maxHealth ? s_health : s_empty;
-			screen.drawSpriteGUI(toDraw, 1 + 4 * i, 6);
+		for (int i = 0; i < manaDrawCount; i++) {
+			screen.drawSpriteGUI(s_mana, 11 + i, 6);
 		}
 
 	}
 
+
 	public void drawDebug(Screen screen) {
+
 		String[] lines = new String[] {
 				Game.fps + "fps",
 				Game.tps + "tps",
 				tickCount + " ticks",
 				level.objects.size() + " objects",
 				"mouse: " + (Mouse.left.down ? "clicked" : "released"),
-				"CPU: " + Math.round(operatingSystemMXBean.getProcessCpuLoad() * 100) + "%"
+				"Thread Count: " + Thread.activeCount(),
+				"w clicked" + input.up.clicked
+
 		};
 
 		for (int i = 0; i < lines.length; i++) {
 			Font.drawText(screen, lines[i], 1, 1 + 7 * i, 0xffffff);
 		}
 
-	}
+		int phS = performanceHistory.size();
+		for (int i = 0; i < phS; i++) {
+			int y = HEIGHT - performanceHistory.get(i);
+			screen.drawLine((WIDTH - i) + screen.offset.x, y + screen.offset.y, (WIDTH - i) + screen.offset.x, HEIGHT + screen.offset.y, 0xffffff);
 
-	public void drawFocusText() {
-		if (!hasFocus()) {
-			for (int i = 0; i < WIDTH * HEIGHT; i++) {
-				screen.pixels[i] = Color.Adjust(screen.pixels[i], 0.3f);
-			}
-			String s1 = "Paused";
-			int sX = WIDTH / 2 - s1.length() * 6 / 2 - 5;
-			int sY = 5;
-			screen.drawSquare(sX, sY, sX + s1.length() * 6 + 9, sY + 42, 0x000000);
-			Font.drawText(screen, s1, WIDTH / 2 - s1.length() * 6 / 2, 10, 0x008751);
-			if (Math.sin(tickCount / 4) >= 0) {
-				int ctfY = 20;
-				Font.drawText(screen, "CLICK", WIDTH / 2 - 5 * 6 / 2, ctfY, 0xffffff);
-				Font.drawText(screen, "TO", WIDTH / 2 - 2 * 6 / 2, ctfY + 8, 0xffffff);
-				Font.drawText(screen, "FOCUS", WIDTH / 2 - 5 * 6 / 2, ctfY + 16, 0xffffff);
-			}
 		}
+
 	}
 
 	public static void main(String[] args) {
 		Game game = new Game();
 		game.start();
 	}
-	
+
 }

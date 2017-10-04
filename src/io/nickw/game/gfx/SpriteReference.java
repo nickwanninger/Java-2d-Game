@@ -8,10 +8,21 @@ public class SpriteReference {
 	// width & height of the sprite on the sheet
 	public int width = 8;
 	public int height = 8;
-	
-	public SpriteReference(Coordinate t, int w, int h) {
-		pos = t;
+
+	public SpriteReference(int x, int y, int w, int h) {
+		pos.x = x;
+		pos.y = y;
 		width = w;
 		height = h;
+
+
 	}
+	public SpriteReference(Coordinate t, int w, int h) {
+		this(t.x, t.y, w, h);
+	}
+
+	public SpriteReference(int x, int y) {
+		this(x,y,8,8);
+	}
+
 }

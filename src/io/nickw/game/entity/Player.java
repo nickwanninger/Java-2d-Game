@@ -6,32 +6,50 @@ import io.nickw.game.entity.projectile.Projectile;
 import io.nickw.game.gfx.Animation;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.gfx.SpriteReference;
+import io.nickw.game.item.Inventory;
+import io.nickw.game.item.ItemStack;
+import io.nickw.game.item.weapon.BasicWeapon;
+import io.nickw.game.item.weapon.RingWeapon;
 import io.nickw.game.level.Level;
-import io.nickw.game.sound.Sound;
+import io.nickw.game.sound.Sounds;
+import io.nickw.game.util.Cooldown;
+import io.nickw.game.util.InputHandler;
+import io.nickw.game.util.Mouse;
+import io.nickw.game.util.Timeout;
+import io.nickw.game.weapon.BasicWeaponOld;
+import io.nickw.game.weapon.Weapon;
 
 public class Player extends Entity {
 
+	public Inventory inventory = new Inventory(this);
 
 	private InputHandler input;
 	boolean moving = false;
 	boolean walking = false;
 
-	public int health = 10;
-	public int maxHealth = 10;
-	public int mana = 25;
-	public int maxMana = 25;
+	public int health = 100;
+	public int maxHealth = 100;
+	public int mana = 100;
+	public int maxMana = 100;
 
 	private int direction = 0;
 	private int tickCount = 0;
 	private int flipBits = 0x00;
 
+	public boolean showInventory = false;
+
+	Weapon primaryWeapon = new BasicWeaponOld();
+
+	private Cooldown weaponCooldown;
+
 	Screen screen;
-	private int attackCooldown = 200;
-	private long lastAttacked = System.currentTimeMillis();
-	private long manaRechargeCooldown = 500;
+
+	private long lastUsedMana = System.currentTimeMillis();
 	private Animation LRAnimation = new Animation(6, new Coordinate(8, 32), 8, 8);
 	private Animation DownAnimation = new Animation(6, new Coordinate(8, 40), 8, 8);
 	private Animation UpAnimation = new Animation(6, new Coordinate(8, 48), 8, 8);
+
+
 	public Player(int x, int y, Level level, InputHandler i) {
 		super(x, y, level);
 		this.level = level;
@@ -41,41 +59,45 @@ public class Player extends Entity {
 		LRAnimation.frameRate = 15;
 		DownAnimation.frameRate = 15;
 		UpAnimation.frameRate = 15;
+		weaponCooldown = new Cooldown(0);
+
+		inventory.add(new BasicWeapon());
+		inventory.add(new RingWeapon());
+
 	}
 
 	public void tick() {
+		weaponCooldown.tick();
+		inventory.tick();
 		tickCount++;
 
-		if (mana < maxMana) {
-			mana += (int) ((System.currentTimeMillis() - lastAttacked) / (float) manaRechargeCooldown);
+		int timeSinceLastManaUsage = (int) (System.currentTimeMillis() - lastUsedMana);
+		if (timeSinceLastManaUsage > 500 && mana <= maxMana) {
+			mana += (int) (timeSinceLastManaUsage / 700.0);
 		}
-
-		mana = Math.max(0, Math.min(mana, 100));
+		mana = Math.max(0, Math.min(mana, maxMana));
 
 		float moveSpeed = 1f;
-		// apply the input to the speed value.
-		if (input.right.down) {
-			velocity.x = moveSpeed;
-		}
 
-		if (input.left.down) {
-			velocity.x = -moveSpeed;
-		}
+		if (input.inventory.clicked) inventory.toggle();
 
-		if (input.up.down) {
-			velocity.y = -moveSpeed;
-		}
+		if (!inventory.visible) {
+			// apply the input to the speed value.
+			if (input.right.down) velocity.x = moveSpeed;
 
-		if (input.down.down) {
-			velocity.y = moveSpeed;
-		}
+			if (input.left.down) velocity.x = -moveSpeed;
 
-		if (Mouse.left.down) {
-			long now = System.currentTimeMillis();
-			if (now - attackCooldown >= lastAttacked) {
-				attack();
+			if (input.up.down) velocity.y = -moveSpeed;
+
+			if (input.down.down) velocity.y = moveSpeed;
+
+			if (Mouse.left.down && inventory.getSelectedItem() != null && inventory.getSelectedItem().canAttack()) {
+				if (weaponCooldown.isDone()) {
+					attack();
+				}
 			}
 		}
+
 
 		move();
 
@@ -96,7 +118,6 @@ public class Player extends Entity {
 				Smoke s = new Smoke(sx, sy, level);
 				s.velocity = velocity;
 				level.addObject(s);
-//				Sound.step.play();
 			}
 			if (Math.abs(velocity.x) > 0) {
 				if (velocity.x < 0) {
@@ -106,40 +127,65 @@ public class Player extends Entity {
 					flipBits = 0x00;
 				}
 			}
-
 		} else {
 			walking = false;
 		}
-
 		velocity.x = 0;
 		velocity.y = 0;
 	}
 
-	public void attack() {
-		int manaCost = 1;
-		if (mana > manaCost) {
-			mana -= manaCost;
-			lastAttacked = System.currentTimeMillis();
-			Sound.flame.play();
-			Vector2 v = getAttackVector(3);
-			float o = 0.1f;
-			for(int i = 0; i < 1; i++) {
-				Vector2 f = new Vector2(v.x + (float) (Math.random() * o - o/2), v.y + (float) (Math.random() * o - o/2));
-				Projectile p = new Projectile(position.x, position.y, f, level);
-				level.addObject(p);
-			}
+	public boolean useMana(int m) {
+		if (mana >= m) {
+			lastUsedMana = System.currentTimeMillis();
+			mana -= m;
+			return true;
+		} else {
+			return false;
 		}
-
-
 	}
 
-	public Vector2 getAttackVector(float speed) {
-		float aimX = screen.offset.x + Game.mouseX - (position.x + 4);
-		float aimY = screen.offset.y + Game.mouseY - (position.y + 4);
-		double multiplier = speed / Math.sqrt(Math.pow(aimX, 2) + Math.pow(aimY, 2));
-		aimX *= multiplier;
-		aimY *= multiplier;
-		return new Vector2(aimX, aimY);
+	public void attack() {
+		ItemStack weapon = inventory.getSelectedItem();
+		weaponCooldown.reset(weapon.getCooldownTime());
+		int manaCost = weapon.getManaCost();
+		double shotCount = weapon.getShotCount();
+		double speed = weapon.getProjectileSpeed();
+		if (mana >= manaCost * shotCount) {
+
+			double halfCount = (shotCount - 1) / 2;
+			double aimAngle = getAttackAngle();
+			double shotAngle = weapon.getShotAngle();
+			int fireCount = 0;
+			for (double i = -halfCount; i <= halfCount; i++) {
+
+				double angle = aimAngle + shotAngle * i;
+				new Timeout(() -> {
+					useMana(manaCost);
+					Sounds.shoot.play(0.05f);
+					Vector2 v = getAttackVector(speed, angle);
+					Projectile p = new Projectile(position.x, position.y, v, level);
+					level.addObject(p);
+				}, fireCount * weapon.getShotDelay());
+
+				fireCount++;
+			}
+		} else {
+			Sounds.error.play(0.5f);
+		}
+	}
+	public Vector2 getAttackVector(double speed) {
+		return getAttackVector(speed, getAttackAngle());
+	}
+	public Vector2 getAttackVector(double speed, double angle) {
+		float x = (float) (speed * Math.cos(angle));
+		float y = (float) (speed * Math.sin(angle));
+		return new Vector2(x, y);
+	}
+
+	public double getAttackAngle() {
+		float x = (screen.offset.x + Game.mouseX) - (position.x + 4);
+		float y = (screen.offset.y + Game.mouseY) - (position.y + 4);
+		return Math.atan2(y, x);
 	}
 
 	public void render(Screen screen) {
@@ -171,13 +217,21 @@ public class Player extends Entity {
 		}
 
 		drawShadow(screen);
+
 		screen.drawSprite(dS, Math.round(position.x), Math.round(position.y), flipBits);
-//		bounds.render(screen, position);
 	}
 
+	public void drawMenus(Screen screen) {
+		inventory.render(screen);
+	}
+
+
 	public int getLightRadius() {
-		int d = (int) (Math.sin(System.currentTimeMillis() / 2000d) * 10) ;
-		return 60 + d;
+		int d = (int) (Math.random() * 10) ;
+		return 30 + d;
+	}
+	public float getLightIntensity() {
+		return 1f;
 	}
 
 }

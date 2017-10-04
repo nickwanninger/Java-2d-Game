@@ -6,11 +6,11 @@ import io.nickw.game.gfx.*;
 import io.nickw.game.level.Level;
 
 public class GameObject {
-	
+
 	public Vector2 position;
 	public long id;
 	public SpriteReference sprite;
-	private boolean deleted = false;
+	public boolean deleted = false;
 	public Level level;
 	public int order = -1;
 	public LightingType lightingType = LightingType.Fancy;
@@ -53,6 +53,8 @@ public class GameObject {
 	public int getLightColor() {
 		return 0xffffff;
 	}
+
+	public float getLightIntensity() {return 1f;}
 
 	
 	

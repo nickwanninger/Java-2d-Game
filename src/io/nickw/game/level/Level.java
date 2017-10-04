@@ -40,12 +40,12 @@ public class Level {
 	}
 
 	
-	public void addObject(GameObject g) {
+	public synchronized void  addObject(GameObject g) {
 		needsSorting = true;
 		objects.add(g);
 	}
 	
-	public void render(Screen screen) {
+	public synchronized void render(Screen screen) {
 		int xo = screen.offset.x / Tile.TILE_WIDTH - 2;
 		int yo = screen.offset.y / Tile.TILE_WIDTH - 2;
 		int w = (screen.width) / Tile.TILE_WIDTH + 4;
@@ -85,7 +85,7 @@ public class Level {
 	}
 	
 	
-	public void remove(GameObject g) {
+	public synchronized void remove(GameObject g) {
 		for	(int i = 0; i < objects.size(); i++) {
 			if (g == objects.get(i)) {
 				objects.remove(i);
@@ -94,7 +94,7 @@ public class Level {
 		}
 	}
 	
-	public void tick() {
+	public synchronized void tick() {
 		for	(int i = 0; i < objects.size(); i++) {
 			objects.get(i).tick();
 		}

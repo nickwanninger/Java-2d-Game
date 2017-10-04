@@ -10,9 +10,9 @@ import javax.swing.*;
 public class DungeonTester extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private static final int WIDTH = 32;
-	private static final int HEIGHT = 32;
-	private static final int scale = 10;
+	private static final int WIDTH = 128;
+	private static final int HEIGHT = 128;
+	private static final int scale = 4;
 	public int frameCount = 0;
 
 	private JFrame frame;
@@ -43,6 +43,7 @@ public class DungeonTester extends Canvas implements Runnable {
 
 	public void start() {
 		running = true;
+		dungeon.Generate(1);
 		new Thread(this).start();
 	}
 
@@ -80,9 +81,6 @@ public class DungeonTester extends Canvas implements Runnable {
 			createBufferStrategy(3);
 			requestFocus();
 			return;
-		}
-		if (frameCount % 120 == 0) {
-			dungeon.Generate(System.currentTimeMillis());
 		}
 		for (int i = 0; i < pixels.length; i++) {
 			pixels[i] = getColor(dungeon.tileData[i]);

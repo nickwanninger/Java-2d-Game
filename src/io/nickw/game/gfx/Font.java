@@ -2,7 +2,7 @@ package io.nickw.game.gfx;
 
 public class Font {
 	private static Sprite fontData;
-	private static String chars = " ABCDEFGHIJKLMNOPQRSTUVWZYZ:;,.!?><()_/\\0123456789%";
+	private static String chars = " ABCDEFGHIJKLMNOPQRSTUVWZYZ:;,.!?><()_/\\0123456789%-";
 	
 	public Font() {
 		Font.fontData = new Sprite("/font.png");
@@ -11,7 +11,11 @@ public class Font {
 	public static void drawText(Screen screen, String text, int x, int y) {
 		drawText(screen, text, x, y, 0x000000);
 	}
-	
+	public static void drawTextCentered(Screen screen, String text, int x, int y, int c) {
+		int ox = (text.length() / 2) * 6;
+		drawText(screen, text, x - ox, y, 0x000000);
+	}
+
 	
 	public static void drawWithFrame(Screen screen, String msg, int x, int y) {
 		drawWithFrame(screen, msg, x, y, 0xffffff, 0xff000000);

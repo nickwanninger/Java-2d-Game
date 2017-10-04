@@ -23,7 +23,7 @@ public class Floor extends Tile {
 		if (level.getTileType(tx, ty - 1) != id) {
 			screen.drawSprite(new SpriteReference(new Coordinate(tOffset, 16), 8, 8), x, y);
 		} else {
-			screen.drawSprite(new SpriteReference(new Coordinate(tOffset, 24), 8, 8), x, y,  (x * y % 2)+ 1);
+			screen.drawSprite(new SpriteReference(new Coordinate(tOffset, 24), 8, 8), x, y);
 		}
 	}
 

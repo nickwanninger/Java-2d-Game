@@ -10,6 +10,8 @@ public class LightingEngine implements Runnable {
 	int height = 0;
 	public int[] pixels;
 	public int[] dither = new int[]{0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5,};
+	private long lastDrawTime = 0;
+	public long lastDrawDelay = 0;
 	Thread thread;
 	Coordinate offset = new Coordinate(0,0);
 	public boolean shouldRender = true;
@@ -32,20 +34,22 @@ public class LightingEngine implements Runnable {
 		int[] buffer = new int[pixels.length];
 		int[] ownership = new int[pixels.length];
 		while (true) {
+			lastDrawTime = System.currentTimeMillis();
 			for (int i = 0; i < buffer.length; i++) buffer[i] = 0;
 			for (int i = 0; i < ownership.length; i++) ownership[i] = -1;
 			if (shouldRender) {
 				for	(int i = 0; i < level.objects.size(); i++) {
 					GameObject o = level.objects.get(i);
 					if (!(o == null)) {
-						int color = o.getLightColor();
 						LightingType type = o.lightingType;
 						int radius = o.getLightRadius();
+						float intensity = o.getLightIntensity();
 						int px = Math.round(o.position.x + 4);
 						int py = Math.round(o.position.y + 4);
+
 						if (Math.abs(radius) > 0) {
 							if (type == LightingType.Fancy) {
-								renderPointLightAdvanced(px, py, radius, color, buffer, i, ownership);
+								renderPointLightAdvanced(px, py, radius, intensity, buffer);
 							} else if (type == LightingType.Fast) {
 								renderPointLightBasic(px, py, radius, buffer);
 							}
@@ -56,6 +60,13 @@ public class LightingEngine implements Runnable {
 
 				}
 				pixels = buffer.clone();
+
+				lastDrawDelay = (System.nanoTime() - lastDrawTime);
+//				try {
+//					Thread.sleep(2);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 			}
 		}
 
@@ -104,9 +115,9 @@ public class LightingEngine implements Runnable {
 	}
 
 
-	public void renderPointLightAdvanced(int x0, int y0, int r, int color, int[] pixels, int id, int[] ownership) {
+	public void renderPointLightAdvanced(int x0, int y0, int r, float intensity, int[] pixels) {
 		double tau = 2 * Math.PI;
-		double drawCount = 360d;
+		double drawCount = (double)(r * 2);
 		double radius = (double) r;
 		// run around the circle in 8 locations
 		for (double i = 0; i < tau; i += tau / drawCount) {
@@ -134,10 +145,19 @@ public class LightingEngine implements Runnable {
 				int a = ((int) Math.round(x)) - x0;
 				int b = ((int) Math.round(y)) - y0;
 				double dist = Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
-				int br = (int) (255 - (255 * (dist / radius)));
-				if (br > getPixel(xx, yy, pixels)) {
-					setPixel(xx, yy, br, pixels);
+				int br = (int) ((255 - (255 * (dist / radius))) * intensity);
+
+				for (int ox = -1; ox <= 1; ox++) {
+					for (int oy = -1; oy <= 1; oy++) {
+						int fx = xx + ox;
+						int fy = yy + oy;
+						int c = (int) (br * ((ox == 0 && oy == 0) ? 1 : 0.25f));
+						if (br > getPixel(fx, fy, pixels)) {
+							setPixel(fx, fy, br, pixels);
+						}
+					}
 				}
+
 				x = x + stepX;
 				y = y + stepY;
 			}
@@ -168,12 +188,14 @@ public class LightingEngine implements Runnable {
 			int dx = (int) (x + offset.x) & 3;
 			int dy = (int) (y + offset.y) & 3;
 			float intensity = Color.getIntensity(pixels[i]);
-			float alpha = pixels[i] / 255f;
+			float alpha = pixels[i] / 255f + 0.05f;
 
-			screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], alpha);
+//			screen.pixels[i] = pixels[i];
+
+			screen.pixels[i] = Color.lerp(0x000000, screen.pixels[i], alpha);
 
 			if (pixels[i] / 10 <= dither[dx + dy * 4]) {
-				screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], alpha);
+				screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], 0.8f);
 			}
 		}
 	}

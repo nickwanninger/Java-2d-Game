@@ -36,7 +36,7 @@ public class Projectile extends Entity {
 		float chaos = 0.0f;
 		velocity.x += ((Math.random() - 0.5f) * chaos);
 		velocity.y += ((Math.random() - 0.5f) * chaos);
-		if (Math.random() > 0f) {
+		if (Math.random() > 0.5f) {
 			float sx = (float) Math.sin(Math.random()) * 2;
 			float sy = (float) Math.sin(Math.random()) * 2;
 			level.addObject(new Smoke(position.x + sx + 2, position.y + sy + 2, level));
@@ -66,8 +66,10 @@ public class Projectile extends Entity {
 
 	@Override
 	public void hitWall() {
+		velocity.x = 0;
+		velocity.y = 0;
 		destroy();
 		burst();
-		explode();
-	}I ne
+//		explode();
+	}
 }

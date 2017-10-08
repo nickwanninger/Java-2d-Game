@@ -62,6 +62,11 @@ public class LightingEngine implements Runnable {
 				pixels = buffer.clone();
 
 				lastDrawDelay = (System.nanoTime() - lastDrawTime);
+//				try {
+//					Thread.sleep(2);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 			}
 		}
 

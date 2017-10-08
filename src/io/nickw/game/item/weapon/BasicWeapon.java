@@ -9,14 +9,14 @@ public class BasicWeapon extends ItemStack {
 		uiSprite = new SpriteReference(0, 176);
 		worldSprite = new SpriteReference(0, 176);
 		damage = 10;
-		cooldownTime = 20;
+		cooldownTime = 10;
 
-		shotCount = 3;
+		shotCount = 1;
 		shotAngle = Math.PI / 15d;
 
-		shotDelay = 0;
-		projectileSpeed = 2f;
-		manaCost = 1;
+		shotDelay = 10;
+		projectileSpeed = 3f;
+		manaCost = 10;
 	}
 	public boolean canAttack() {
 		return true;

@@ -1,7 +1,6 @@
 package io.nickw.game;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.image.BufferStrategy;
@@ -9,9 +8,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
 import io.nickw.game.entity.Player;
+import io.nickw.game.entity.enemy.Enemy;
 import io.nickw.game.gfx.*;
-import io.nickw.game.gfx.Color;
 import io.nickw.game.gfx.Font;
 import io.nickw.game.level.Level;
 import io.nickw.game.tile.Tile;
@@ -19,7 +19,6 @@ import io.nickw.game.tile.Tile;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.sun.management.OperatingSystemMXBean;
 import io.nickw.game.util.InputHandler;
@@ -28,9 +27,9 @@ import io.nickw.game.util.Mouse;
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	public static final int WIDTH = 120;
-	public static final int HEIGHT = 100;
-	private static final int windowWidth = 800;
+	public static final int WIDTH = 160;
+	public static final int HEIGHT = 120;
+	private static final int windowWidth = WIDTH * 6;
 	private static final int windowHeight = windowWidth * HEIGHT / WIDTH;
 
 	public ArrayList<Integer> performanceHistory = new ArrayList<>();
@@ -66,6 +65,9 @@ public class Game extends Canvas implements Runnable {
 	OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
 
+	BufferedImage cursorImg = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+	Cursor cursor = null;
+
 
 	public Game() {
 
@@ -87,35 +89,12 @@ public class Game extends Canvas implements Runnable {
 		frame.add(keyPanel, BorderLayout.CENTER);
 		input = new InputHandler(keyPanel);
 
-
-		addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				updateCursor();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-
-			}
-		});
-	}
-
-	public void updateCursor() {
-		BufferedImage cursorImg = null;
-		try {
-			cursorImg = ImageIO.read(GameFrame.class.getResource("/cursor.png"));
-			Cursor cursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(8, 8), "blank cursor");
-			setCursor(cursor);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		cursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 
 	}
+
 
 	public void init() {
-//		Process p = java.lang.Runtime.exec("ls");
-
 		lightingEngine = new LightingEngine(WIDTH, HEIGHT, level);
 		screen = new Screen(WIDTH, HEIGHT, new Sprite("/sprite_sheet.png"));
 		screen.pixels = pixels;
@@ -123,6 +102,11 @@ public class Game extends Canvas implements Runnable {
 
 		player = new Player(50 * Tile.TILE_WIDTH, 50 * Tile.TILE_WIDTH, level, input);
 		level.addObject(player);
+		for (int i = 0; i < 10; i++) {
+			Enemy e = new Enemy(50 * Tile.TILE_WIDTH, 50 * Tile.TILE_WIDTH, level);
+			level.addObject(e);
+		}
+
 	}
 
 	public void start() {
@@ -172,7 +156,6 @@ public class Game extends Canvas implements Runnable {
 				lastTimer += 1000;
 				Game.fps = frames;
 				Game.tps = ticks;
-				performanceHistory.add(frames);
 				frames = 0;
 				ticks = 0;
 			}
@@ -180,13 +163,6 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void tick() {
-		if (hasFocus()) {
-			int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
-			int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
-			Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
-			Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
-		}
-
 
 		tickCount++;
 		if (!hasFocus()) {
@@ -200,6 +176,13 @@ public class Game extends Canvas implements Runnable {
 
 
 	public void render() {
+		if (hasFocus()) {
+//			setCursor(cursor);
+			int rawMouseX = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
+			int rawMouseY = MouseInfo.getPointerInfo().getLocation().y - getLocationOnScreen().y;
+			Game.mouseX = (int) (rawMouseX / (float) windowWidth * WIDTH);
+			Game.mouseY = (int) (rawMouseY / (float) windowHeight * HEIGHT);
+		}
 		int xo = (int) player.position.x - (WIDTH - Tile.TILE_WIDTH) / 2;
 		int yo = (int) player.position.y - (HEIGHT - Tile.TILE_WIDTH) / 2  ;
 
@@ -220,9 +203,6 @@ public class Game extends Canvas implements Runnable {
 		level.render(screen);
 		lightingEngine.overlayOntoScreen(screen);
 
-//		for (int i = 0; i < screen.pixels.length; i++) {
-//			screen.pixels[i] = Color.lerp(screen.pixels[i], 0xffffff, 0.1f);
-//		}
 
 		drawGUI(screen);
 		if (input.debug.down) {
@@ -231,6 +211,8 @@ public class Game extends Canvas implements Runnable {
 
 
 		player.drawMenus(screen);
+
+//		screen.drawSpriteGUI(new SpriteReference(0, 104, 8, 8), Game.mouseX, Game.mouseY);
 
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
@@ -271,20 +253,11 @@ public class Game extends Canvas implements Runnable {
 				tickCount + " ticks",
 				level.objects.size() + " objects",
 				"mouse: " + (Mouse.left.down ? "clicked" : "released"),
-				"Thread Count: " + Thread.activeCount(),
-				"w clicked" + input.up.clicked
-
+				"Thread Count: " + Thread.activeCount()
 		};
 
 		for (int i = 0; i < lines.length; i++) {
 			Font.drawText(screen, lines[i], 1, 1 + 7 * i, 0xffffff);
-		}
-
-		int phS = performanceHistory.size();
-		for (int i = 0; i < phS; i++) {
-			int y = HEIGHT - performanceHistory.get(i);
-			screen.drawLine((WIDTH - i) + screen.offset.x, y + screen.offset.y, (WIDTH - i) + screen.offset.x, HEIGHT + screen.offset.y, 0xffffff);
-
 		}
 
 	}

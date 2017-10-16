@@ -8,6 +8,10 @@ public class Coordinate {
 		this.y = y;
 	}
 
+	public Vector2 toVector2() {
+		return new Vector2(x, y);
+	}
+
 	public void setX(int x) {
 		this.x = x;
 	}

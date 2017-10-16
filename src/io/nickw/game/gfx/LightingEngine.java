@@ -126,7 +126,7 @@ public class LightingEngine implements Runnable {
 
 			Coordinate start = new Coordinate(x0, y0);
 			Coordinate end = new Coordinate((int) (x0 + rx),(int) (y0 + ry));
-			end = Raycaster.run(start, end, level, 1);
+			end = Raycaster.run(start, end, level, 1).position.toCoordinate();
 
 			int x1 = end.x;
 			int y1 = end.y;
@@ -192,11 +192,15 @@ public class LightingEngine implements Runnable {
 
 //			screen.pixels[i] = pixels[i];
 
-			screen.pixels[i] = Color.lerp(0x000000, screen.pixels[i], alpha);
+			if (screen.pixels[i] != 0xd95763) {
+				screen.pixels[i] = Color.lerp(0x000000, screen.pixels[i], alpha);
 
-			if (pixels[i] / 10 <= dither[dx + dy * 4]) {
-				screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], 0.8f);
+				if (pixels[i] / 10 <= dither[dx + dy * 4]) {
+					screen.pixels[i] = Color.lerp(0x0e0d15, screen.pixels[i], 0.8f);
+				}
 			}
+
+
 		}
 	}
 }

@@ -15,11 +15,11 @@ public class Bounds {
 		height = h;
 	}
 
-	public void render(Screen screen, Coordinate offset) {
-		int tx = x - screen.offset.x + offset.x;
-		int ty = y - screen.offset.y + offset.y;
-		int mx = x + width - screen.offset.x + offset.x;
-		int my = y + height - screen.offset.y + offset.y;
+	public void render(Screen screen, Vector2 offset) {
+		int tx = x - screen.offset.x + (int) offset.x;
+		int ty = y - screen.offset.y + (int) offset.y;
+		int mx = x + width - screen.offset.x + (int) offset.x;
+		int my = y + height - screen.offset.y + (int) offset.y;
 		screen.drawSquare(tx, ty, mx, my, 0xffffff);
 	}
 }

@@ -42,10 +42,10 @@ public class Projectile extends Entity {
 			level.addObject(new Smoke(position.x + sx + 2, position.y + sy + 2, level));
 		}
 		cooldown.tick();
-//		if(cooldown.isDone()) {
-//			destroy();
-//			explode();
-//		}
+		if(cooldown.isDone()) {
+			destroy();
+			burst();
+		}
 	}
 
 	public void explode() {
@@ -68,6 +68,5 @@ public class Projectile extends Entity {
 	public void hitWall() {
 		destroy();
 		burst();
-		explode();
-	}I ne
+	}
 }

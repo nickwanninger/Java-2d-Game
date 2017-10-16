@@ -2,6 +2,7 @@ package io.nickw.game.gfx;
 
 import io.nickw.game.Coordinate;
 import io.nickw.game.Game;
+import io.nickw.game.GameObject;
 import io.nickw.game.level.Level;
 
 public class Screen {
@@ -120,10 +121,17 @@ public class Screen {
 					if (mirrorY) {
 						dy = (s.height - 1) - sY + y;
 					}
-					setPixel((int) dx - offset.x, (int) dy - offset.y, pixel);
+
+					int color = Color.lerp(pixel, s.fadeColor, s.fadeAmount);
+					setPixel((int) dx - offset.x, (int) dy - offset.y, color);
 				}
 			}
 		}
+	}
+
+
+	public static boolean withinScreen(Screen s, GameObject g) {
+		return false;
 	}
 
 //	public void drawSpriteRotate(SpriteReference s, int x, int y, double r, int flipBits) {

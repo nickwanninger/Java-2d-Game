@@ -9,16 +9,22 @@ public class SpriteReference {
 	public int width = 8;
 	public int height = 8;
 
+	public int fadeColor = 0;
+	public float fadeAmount = 0;
+
 	public SpriteReference(int x, int y, int w, int h) {
 		pos.x = x;
 		pos.y = y;
 		width = w;
 		height = h;
-
-
 	}
 	public SpriteReference(Coordinate t, int w, int h) {
 		this(t.x, t.y, w, h);
+	}
+
+	public void setFadeColor(int c, float a) {
+		fadeColor = c;
+		fadeAmount = a;
 	}
 
 	public SpriteReference(int x, int y) {

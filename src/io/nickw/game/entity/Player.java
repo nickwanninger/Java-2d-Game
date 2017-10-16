@@ -16,7 +16,6 @@ import io.nickw.game.util.Cooldown;
 import io.nickw.game.util.InputHandler;
 import io.nickw.game.util.Mouse;
 import io.nickw.game.util.Timeout;
-import io.nickw.game.weapon.BasicWeaponOld;
 import io.nickw.game.weapon.Weapon;
 
 public class Player extends Entity {
@@ -37,8 +36,6 @@ public class Player extends Entity {
 	private int flipBits = 0x00;
 
 	public boolean showInventory = false;
-
-	Weapon primaryWeapon = new BasicWeaponOld();
 
 	private Cooldown weaponCooldown;
 
@@ -215,6 +212,8 @@ public class Player extends Entity {
 				dS = new SpriteReference(new Coordinate(0, 48), 8, 8);
 			}
 		}
+//		float a = (float) (Math.sin(tickCount / 15f) / 2f + 0.5);
+//		dS.setFadeColor(0xff0000, a);
 
 		drawShadow(screen);
 

@@ -7,6 +7,7 @@ import java.util.Comparator;
 import io.nickw.game.Coordinate;
 import io.nickw.game.GameObject;
 import io.nickw.game.dungeon.Dungeon;
+import io.nickw.game.entity.Player;
 import io.nickw.game.gfx.LightingType;
 import io.nickw.game.gfx.Screen;
 import io.nickw.game.tile.Tile;
@@ -98,6 +99,15 @@ public class Level {
 		for	(int i = 0; i < objects.size(); i++) {
 			objects.get(i).tick();
 		}
+	}
+
+	public Player getPlayer() {
+		for	(int i = 0; i < objects.size(); i++) {
+			if (objects.get(i) instanceof Player) {
+				return (Player) objects.get(i);
+			}
+		}
+		return null;
 	}
 
 

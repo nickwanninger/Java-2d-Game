@@ -15,7 +15,7 @@ public class Entity extends GameObject {
 	public Level level;
 	public boolean grounded = false;
 	public Bounds bounds = new Bounds(0,0,8,8);
-	Direction dir = Direction.EAST;
+	public Direction dir = Direction.EAST;
 	Vector2 dirVector = new Vector2(1,0);
 
 	// constructor
@@ -94,6 +94,9 @@ public class Entity extends GameObject {
 	public void hitWall() {
 
 	}
+
+
+
 
 
 	public void drawShadow(Screen screen) {
